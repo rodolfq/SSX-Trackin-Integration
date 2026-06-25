@@ -1,0 +1,8 @@
+{
+  "name": "SSX Developer Portal",
+  "description": "Integre rastreamento, telemetria, eventos e cadastros da plataforma SSX em seu sistema.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

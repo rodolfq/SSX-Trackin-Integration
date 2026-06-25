@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "overlayscrollbars/styles/overlayscrollbars.css";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  :root {
+    --background: #0b0e14;
+    --foreground: #cbd5e1;
+    --card: #0d1117;
+    --card-foreground: #cbd5e1;
+    --popover: #0d1117;
+    --popover-foreground: #cbd5e1;
+    --primary: #0ea5e9;
+    --primary-foreground: #ffffff;
+    --secondary: #1e293b;
+    --secondary-foreground: #ffffff;
+    --muted: #1e293b;
+    --muted-foreground: #64748b;
+    --accent: #1e293b;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #1e293b;
+    --input: #1e293b;
+    --ring: #0ea5e9;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ==========================================================================
+   Sistema Global de Scrollbars (Padrão WhatsApp Web)
+   ========================================================================== */
+
+/* Camada global de fallback nativo para todos os elementos com overflow */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+/* Utilitário Tailwind reutilizável e configuração de OverlayScrollbars */
+.app-scrollbar,
+[data-overlayscrollbars-initialize],
+.os-scrollbar {
+  --os-size: 6px !important;
+  --os-padding-perpendicular: 0px !important;
+  --os-padding-axis: 0px !important;
+  --os-track-border-radius: 999px !important;
+  --os-track-bg: transparent !important;
+  --os-track-bg-hover: transparent !important;
+  --os-track-bg-active: transparent !important;
+  --os-handle-border-radius: 999px !important;
+  --os-handle-bg: rgba(255, 255, 255, 0.25) !important;
+  --os-handle-bg-hover: rgba(255, 255, 255, 0.45) !important;
+  --os-handle-bg-active: rgba(255, 255, 255, 0.65) !important;
+}
+
+.os-scrollbar .os-scrollbar-handle {
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  transition: background-color 0.2s ease-in-out !important;
+}
+
+.os-scrollbar:hover .os-scrollbar-handle,
+.os-scrollbar .os-scrollbar-handle:hover {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+.os-scrollbar .os-scrollbar-handle:active {
+  background: rgba(255, 255, 255, 0.65) !important;
+}
+
+.os-scrollbar .os-scrollbar-track {
+  background: transparent !important;
+}
+
