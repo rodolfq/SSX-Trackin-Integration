@@ -18,11 +18,11 @@ export default function AdminDashboard() {
           <FileJson className="h-8 w-8 text-primary mb-4" />
           <h2 className="text-xl font-semibold mb-2">Gerenciar Endpoints</h2>
           <p className="text-muted-foreground text-sm mb-4">
-            Adicione, edite ou remova endpoints. Os dados são salvos na tabela <code className="bg-secondary/50 px-1 rounded text-primary">endpoints</code>.
+            Adicione, edite ou remova endpoints e templates. Os dados são salvos localmente e injetados dinamicamente no menu.
           </p>
-          <button className="text-primary text-sm font-medium hover:underline">
+          <Link href="/admin/endpoints" className="text-primary text-sm font-medium hover:underline inline-flex items-center">
             Ir para Endpoints →
-          </button>
+          </Link>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">

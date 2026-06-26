@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SSX Developer Portal',
+  title: 'SSX Integration',
   description: 'SSX Tracking Integration Documentation',
 };
 

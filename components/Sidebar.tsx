@@ -19,141 +19,15 @@ import {
 } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
 import { useEffect } from 'react';
+import { useEndpointStore } from '@/store/endpointStore';
 
-const navigation: {
-  category: string;
-  items: {
-    name: string;
-    href?: string;
-    icon?: any;
-    children?: { name: string; href: string }[];
-  }[];
-}[] = [
+const staticNavigation = [
   {
     category: 'Getting Started',
     items: [
       { name: 'Introduction', href: '/', icon: BookOpen },
       { name: 'First Steps', href: '/getting-started', icon: Zap },
       { name: 'Authentication', href: '/auth', icon: Key },
-    ]
-  },
-  {
-    category: 'API Reference',
-    items: [
-      {
-        name: 'Actuator',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/actuator/list' },
-        ],
-      },
-      {
-        name: 'Command',
-        children: [
-          { name: 'SendFreeTextMessage', href: '/endpoints/tracking/command/send-free-text-message' },
-          { name: 'GetCommandStatus', href: '/endpoints/tracking/command/get-command-status' },
-        ],
-      },
-      {
-        name: 'Event',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/event/list' },
-        ],
-      },
-      {
-        name: 'Fuel',
-        children: [
-          { name: 'Insert', href: '/endpoints/tracking/fuel/insert' },
-          { name: 'InsertList', href: '/endpoints/tracking/fuel/insert-list' },
-          { name: 'List', href: '/endpoints/tracking/fuel/list' },
-        ],
-      },
-      {
-        name: 'Message',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/message/list' },
-          { name: 'SendToOnboard', href: '/endpoints/tracking/message/send-to-onboard' },
-          { name: 'CheckSendStatusOnboard', href: '/endpoints/tracking/message/check-send-status-onboard' },
-        ],
-      },
-      {
-        name: 'Person',
-        children: [
-          { name: 'ListPerson', href: '/endpoints/tracking/person/list-person' },
-          { name: 'ListPersonRole', href: '/endpoints/tracking/person/list-person-role' },
-          { name: 'InsertPerson', href: '/endpoints/tracking/person/insert-person' },
-          { name: 'UpdatePerson', href: '/endpoints/tracking/person/update-person' },
-          { name: 'AutoGenerateIntegrationCode', href: '/endpoints/tracking/person/auto-generate-integration-code' },
-        ],
-      },
-      {
-        name: 'PositionHistory',
-        children: [
-          { name: 'v3 / List', href: '/endpoints/tracking/position-history' },
-          { name: 'List', href: '/endpoints/tracking/position-history/list' },
-          { name: 'ListSoap', href: '/endpoints/tracking/position-history/list-soap' },
-          { name: 'v2 / List', href: '/endpoints/tracking/position-history/v2-list' },
-        ],
-      },
-      {
-        name: 'Report',
-        children: [
-          { name: 'DriverRanking', href: '/endpoints/tracking/report/driver-ranking' },
-          { name: 'AreaPassage', href: '/endpoints/tracking/report/area-passage' },
-          { name: 'TrackedUnitUsage', href: '/endpoints/tracking/report/tracked-unit-usage' },
-          { name: 'TrackedUnitUsageConsolidated', href: '/endpoints/tracking/report/tracked-unit-usage-consolidated' },
-          { name: 'ActuatorsActivation', href: '/endpoints/tracking/report/actuators-activation' },
-          { name: 'SensorsActivation', href: '/endpoints/tracking/report/sensors-activation' },
-          { name: 'DailyConsolidatedWorkday', href: '/endpoints/tracking/report/daily-consolidated-workday' },
-          { name: 'WorkdaySteps', href: '/endpoints/tracking/report/workday-steps' },
-          { name: 'Maintenance / List', href: '/endpoints/tracking/report/maintenance-list' },
-        ],
-      },
-      {
-        name: 'RuleCompatible',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/rule-compatible/list' },
-          { name: 'SetAssociationOfTrackedUnitWithRule', href: '/endpoints/tracking/rule-compatible/set-association' },
-        ],
-      },
-      {
-        name: 'RuleList',
-        children: [
-          { name: 'ListRulesByUnitTracked', href: '/endpoints/tracking/rule-list/list-rules-by-unit-tracked' },
-          { name: 'ListUnitTrackedByRule', href: '/endpoints/tracking/rule-list/list-unit-tracked-by-rule' },
-          { name: 'ListRuleOfLoggedUser', href: '/endpoints/tracking/rule-list/list-rule-of-logged-user' },
-        ],
-      },
-      {
-        name: 'RuleViolation',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/rule-violation/list' },
-          { name: 'v2 / List', href: '/endpoints/tracking/rule-violation/v2-list' },
-        ],
-      },
-      {
-        name: 'Sensor',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/sensor/list' },
-        ],
-      },
-      {
-        name: 'Telemetry',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/telemetry/list' },
-        ],
-      },
-      {
-        name: 'Trailer',
-        children: [
-          { name: 'List', href: '/endpoints/tracking/trailer/list' },
-        ],
-      },
-      {
-        name: 'Videotelemetry',
-        children: [
-          { name: 'GetURLStreamLink', href: '/endpoints/tracking/videotelemetry/get-url-stream-link' },
-        ],
-      },
     ]
   },
   {
@@ -170,13 +44,53 @@ export function Sidebar() {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [favorites, setFavorites] = useState<string[]>([]);
+  const { endpoints } = useEndpointStore();
+  const [navigation, setNavigation] = useState(staticNavigation);
+
+  useEffect(() => {
+    if (endpoints && endpoints.length > 0) {
+      const dynamicNav = staticNavigation.map(cat => ({
+        ...cat,
+        items: cat.items.map(item => ({
+          ...item,
+          children: (item as any).children ? [...(item as any).children] : undefined
+        }))
+      }));
+      
+      endpoints.forEach(ep => {
+        let catIndex = dynamicNav.findIndex((c: any) => c.category === ep.category);
+        if (catIndex === -1) {
+          dynamicNav.splice(dynamicNav.length - 1, 0, { category: ep.category, items: [] });
+          catIndex = dynamicNav.findIndex((c: any) => c.category === ep.category);
+        }
+
+        let groupItem: any = dynamicNav[catIndex].items.find((i: any) => i.name === ep.group);
+        if (!groupItem) {
+          groupItem = { name: ep.group, children: [] };
+          dynamicNav[catIndex].items.push(groupItem as any);
+        }
+
+        if (!groupItem.children) groupItem.children = [];
+        groupItem.children.push({ name: ep.name, href: `/endpoints/dynamic/${ep.id}` });
+      });
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setNavigation(dynamicNav as any);
+    } else {
+       
+      setNavigation(staticNavigation);
+    }
+  }, [endpoints]);
 
   useEffect(() => {
     const stored = localStorage.getItem('ssx-favorites');
     if (stored) {
       try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFavorites(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setFavorites(parsed);
+        }
       } catch (e) {}
     }
   }, []);
@@ -198,12 +112,13 @@ export function Sidebar() {
   // Build a flat list of favorites with their context (parent name)
   const favoriteItems = favorites.map(href => {
     for (const group of navigation) {
-      if (group.category === 'Getting Started') continue;
+      if (group.category === 'Getting Started' || group.category === 'Catalogs & Tools') continue;
       for (const item of group.items) {
-        if (item.href === href) return { ...item, parentName: null };
-        if (item.children) {
-          const child = item.children.find(c => c.href === href);
-          if (child) return { ...child, parentName: item.name, icon: item.icon };
+        const anyItem = item as any;
+        if (anyItem.href === href) return { ...anyItem, parentName: null };
+        if (anyItem.children) {
+          const child = anyItem.children.find((c: any) => c.href === href);
+          if (child) return { ...child, parentName: anyItem.name, icon: anyItem.icon };
         }
       }
     }
@@ -270,7 +185,7 @@ export function Sidebar() {
                           {item.icon && <item.icon className="w-4 h-4" />}
                           {item.name}
                         </div>
-                        {group.category !== 'Getting Started' && (
+                        {group.category !== 'Getting Started' && group.category !== 'Catalogs & Tools' && (
                           <button onClick={(e) => toggleFavorite(e, item.href)} className={cn("shrink-0 transition-opacity", favorites.includes(item.href) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                              <Star className={cn("w-3.5 h-3.5", favorites.includes(item.href) ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground hover:text-foreground")} />
                           </button>

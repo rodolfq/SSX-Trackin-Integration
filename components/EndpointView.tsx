@@ -135,7 +135,7 @@ export function EndpointView({
     const bodyStr = method !== 'GET' && payload.trim() !== '' ? `\n  "body": JSON.stringify(${payload.replace(/\n/g, '\n  ')})` : '';
 
     switch (lang) {
-      case 'javascript':
+      case 'json':
         return `fetch("${fullUrl}", {
   "method": "${method}",
   "headers": {
@@ -174,13 +174,13 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'javascript' | 'python' | 'csharp'>('javascript');
+  const [activeTab, setActiveTab] = useState<'json' | 'python' | 'csharp'>('json');
   const [schemaTab, setSchemaTab] = useState<'example' | 'schema'>('schema');
   const [snippetCopied, setSnippetCopied] = useState(false);
 
   const editorOptions = useMemo(() => ({
     automaticLayout: true,
-    readOnly: activeTab !== 'javascript',
+    readOnly: activeTab !== 'json',
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
     fontSize: 13,
@@ -214,8 +214,8 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden">
       {/* Documentation Column */}
-      <AppScrollbar className="flex-1 p-8 border-r border-border min-w-0">
-        <div className="max-w-2xl">
+      <AppScrollbar className="flex-1 p-6 md:p-8 border-r border-border min-w-0">
+        <div className="max-w-4xl 2xl:max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <span className={`px-2 py-1 text-xs font-bold rounded border ${methodColor}`}>
               {method}
@@ -253,15 +253,15 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                     {schema.name} <span className="text-muted-foreground font-mono font-normal">{'{'}</span>
                   </div>
                   <div className="pl-4 space-y-4">
-                    {schema.fields.map(field => (
-                      <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-3">
-                        <div className="w-48 shrink-0 flex items-center gap-1">
-                          <span className="font-mono text-foreground">{field.name}</span>
+                    {schema.fields?.map(field => (
+                      <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                        <div className="w-full sm:w-1/3 sm:max-w-[250px] shrink-0 flex items-start gap-1 pt-1">
+                          <span className="font-mono text-foreground break-all">{field.name}</span>
                           {field.required && <span className="text-red-500 font-bold">*</span>}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="font-mono text-blue-400 mb-1">{field.type}</span>
-                          <span className="font-sans text-muted-foreground leading-relaxed">{field.description}</span>
+                        <div className="flex flex-col flex-1">
+                          <span className="font-mono text-blue-400 mb-2 text-[13px]">{field.type}</span>
+                          <span className="font-sans text-muted-foreground leading-relaxed whitespace-pre-wrap">{field.description}</span>
                         </div>
                       </div>
                     ))}
@@ -303,7 +303,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
       </AppScrollbar>
 
       {/* Playground Column */}
-      <div className="w-full lg:w-[450px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-[#010409] flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
+      <div className="w-full lg:w-[450px] xl:w-[500px] 2xl:w-[600px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-[#010409] flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
         {/* Auth Status Banner */}
         {!token ? (
            <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex items-center gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
@@ -314,13 +314,13 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
         
         {/* Tabs */}
         <div className="flex border-b border-border px-2 shrink-0">
-          {(['javascript', 'python', 'csharp'] as const).map((lang) => (
+          {(['json', 'python', 'csharp'] as const).map((lang) => (
             <button
               key={lang}
               onClick={() => setActiveTab(lang)}
               className={`px-4 py-3 text-xs font-medium capitalize border-b-2 transition-colors ${activeTab === lang ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             >
-              {lang === 'javascript' ? 'JavaScript' : lang === 'csharp' ? 'C#' : lang}
+              {lang === 'json' ? 'JSON' : lang === 'csharp' ? 'C#' : lang}
             </button>
           ))}
         </div>
@@ -331,12 +331,12 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
             <div className="flex justify-between items-center px-4 py-3 border-b border-border bg-secondary/50">
               <span className="text-muted-foreground text-[10px] uppercase tracking-tighter font-sans font-medium">Editor de Payload</span>
               <div className="flex gap-2 items-center">
-                {presets.length > 0 && (
+                {(presets?.length ?? 0) > 0 && (
                   <select 
                     className="text-[10px] font-sans bg-secondary border border-border text-foreground px-2 py-1 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary max-w-[150px] truncate"
                     onChange={(e) => {
                       if (e.target.value) {
-                        const selected = presets.find(p => p.name === e.target.value);
+                        const selected = presets?.find(p => p.name === e.target.value);
                         if (selected) {
                           let payloadStr = JSON.stringify(selected.payload, null, 2);
                           if (payloadStr.includes('"LastIdPosition"')) {
@@ -351,7 +351,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                     }}
                   >
                     <option value="">Carregar Preset...</option>
-                    {presets.map(p => (
+                    {presets?.map(p => (
                       <option key={p.name} value={p.name}>{p.name}</option>
                     ))}
                   </select>
@@ -367,19 +367,19 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
             
             <div className="flex-1 relative min-h-0">
               {/* Show Code Snippet or JSON Editor based on tab? The mockup shows payload editor separate from snippets. Let's make the editor fixed for payload and show snippets if tab is changed. */}
-              {activeTab === 'javascript' || activeTab === 'python' || activeTab === 'csharp' ? (
+              {activeTab === 'json' || activeTab === 'python' || activeTab === 'csharp' ? (
                  <Editor
                   height="100%"
-                  language={activeTab === 'javascript' ? 'json' : activeTab} // JSON editor for payload, others for code
+                  language={activeTab === 'json' ? 'json' : activeTab} // JSON editor for payload, others for code
                   theme="vs-dark"
-                  value={activeTab === 'javascript' ? payload : generateCodeSnippet(activeTab)}
-                  onChange={activeTab === 'javascript' ? (val) => setPayload(val || '') : undefined}
+                  value={activeTab === 'json' ? payload : generateCodeSnippet(activeTab)}
+                  onChange={activeTab === 'json' ? (val) => setPayload(val || '') : undefined}
                   options={editorOptions}
                 />
               ) : null}
             </div>
 
-            {activeTab === 'javascript' && (
+            {activeTab === 'json' && (
               <div className="p-4 border-t border-border bg-card shrink-0">
                 <button
                   onClick={handleExecute}

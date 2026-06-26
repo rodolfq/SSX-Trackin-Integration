@@ -1,5 +1,5 @@
 {
-  "name": "SSX Developer Portal",
+  "name": "SSX Integration",
   "description": "Integre rastreamento, telemetria, eventos e cadastros da plataforma SSX em seu sistema.",
   "requestFramePermissions": [],
   "majorCapabilities": [
