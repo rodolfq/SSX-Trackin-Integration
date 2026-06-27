@@ -29,6 +29,7 @@ export interface EndpointDef {
   description: string;
   defaultPayload: any;
   schema?: EndpointSchema;
+  responseSchema?: EndpointSchema;
   presets?: EndpointPreset[];
 }
 
@@ -62,12 +63,29 @@ export const useEndpointStore = create<EndpointStore>()(
       setEndpoints: (endpoints) => set({ endpoints }),
       resetEndpoints: () => set({ endpoints: initialEndpoints as EndpointDef[] }),
       syncInitialEndpoints: () => set((state) => {
+        const initialMap = new Map((initialEndpoints as EndpointDef[]).map(ep => [ep.id, ep]));
+        
+        const updatedEndpoints = state.endpoints.map(ep => {
+          if (initialMap.has(ep.id)) {
+            const initial = initialMap.get(ep.id)!;
+            return {
+              ...ep,
+              schema: initial.schema,
+              responseSchema: initial.responseSchema,
+              defaultPayload: initial.defaultPayload,
+              description: initial.description,
+              name: initial.name,
+              method: initial.method,
+              path: initial.path
+            };
+          }
+          return ep;
+        });
+
         const existingIds = new Set(state.endpoints.map(ep => ep.id));
         const missing = (initialEndpoints as EndpointDef[]).filter(ep => !existingIds.has(ep.id));
-        if (missing.length > 0) {
-          return { endpoints: [...state.endpoints, ...missing] };
-        }
-        return state;
+        
+        return { endpoints: [...updatedEndpoints, ...missing] };
       }),
     }),
     {

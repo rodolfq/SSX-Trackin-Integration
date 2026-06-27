@@ -128,7 +128,8 @@ export function Sidebar() {
   return (
     <aside className="w-64 border-r border-border flex flex-col shrink-0 bg-card h-screen sticky top-0">
       <div className="p-6 flex items-center gap-3 border-b border-border shrink-0">
-        <div className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold text-primary-foreground">S</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-gerada.svg" alt="Systemsat" className="h-8 w-auto object-contain" />
         <span className="text-foreground font-semibold tracking-tight">SSX Developer</span>
       </div>
       

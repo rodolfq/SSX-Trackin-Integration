@@ -26,6 +26,20 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary mb-4">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <h2 className="text-xl font-semibold mb-2">Editar First Steps</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            Edite o conteúdo da tela de Primeiros Passos (First Steps). Use markdown para textos, imagens, código e links.
+          </p>
+          <Link href="/admin/first-steps" className="text-primary text-sm font-medium hover:underline inline-flex items-center">
+            Editar Conteúdo →
+          </Link>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
           <Activity className="h-8 w-8 text-primary mb-4" />
           <h2 className="text-xl font-semibold mb-2">Logs de Teste</h2>
           <p className="text-muted-foreground text-sm mb-4">

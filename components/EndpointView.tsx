@@ -34,6 +34,7 @@ interface EndpointViewProps {
   defaultPayload?: any;
   presets?: { name: string; payload: any }[];
   schema?: EndpointSchema;
+  responseSchema?: EndpointSchema;
 }
 
 export function EndpointView({
@@ -44,7 +45,8 @@ export function EndpointView({
   parameters = [],
   defaultPayload = {},
   presets = [],
-  schema
+  schema,
+  responseSchema
 }: EndpointViewProps) {
   const { token } = useAuthStore();
   const [payload, setPayload] = useState(JSON.stringify(defaultPayload, null, 2));
@@ -296,6 +298,34 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {responseSchema && (
+          <div className="space-y-4 mt-8">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">Response Body</h3>
+            <div className="bg-card rounded-lg border border-border p-5 text-sm overflow-auto">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-foreground font-semibold font-sans mb-4">
+                  {responseSchema.name} <span className="text-muted-foreground font-mono font-normal">{'{'}</span>
+                </div>
+                <div className="pl-4 space-y-4">
+                  {responseSchema.fields?.map(field => (
+                    <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                      <div className="w-full sm:w-1/3 sm:max-w-[250px] shrink-0 flex items-start gap-1 pt-1">
+                        <span className="font-mono text-foreground break-all">{field.name}</span>
+                        {field.required && <span className="text-red-500 font-bold">*</span>}
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <span className="font-mono text-blue-400 mb-2 text-[13px]">{field.type}</span>
+                        <span className="font-sans text-muted-foreground leading-relaxed whitespace-pre-wrap">{field.description}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-muted-foreground font-mono mt-2">{'}'}</div>
+              </div>
             </div>
           </div>
         )}

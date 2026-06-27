@@ -804,6 +804,17 @@ export const initialEndpoints = [
       { name: "Value", type: "any", description: "Valor a ser utilizado no filtro.", required: true }
     ]
   },
+  responseSchema: {
+    name: "PositionResult[]",
+    fields: [
+      { name: "IdPosition", type: "integer($int64)", description: "Código identificador único da posição recebida do rastreador.", required: false },
+      { name: "TrackedUnit", type: "string", description: "Descrição da unidade rastreada. Este é o valor apresentado nas telas do SSX.", required: false },
+      { name: "EventDate", type: "string($date-time)", description: "Data da posição gerada pelo rastreador.", required: false },
+      { name: "Latitude", type: "number($double)", description: "Latitude da posição.", required: false },
+      { name: "Longitude", type: "number($double)", description: "Longitude da posição.", required: false },
+      { name: "Address", type: "string", description: "Endereço da posição.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -851,6 +862,19 @@ export const initialEndpoints = [
       { name: "PropertyName", type: "string", description: "Nome da propriedade que se deseja filtrar (maxLength: 150, minLength: 1)", required: true },
       { name: "Condition", type: "string", description: "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo", required: true },
       { name: "Value", type: "any", description: "Valor a ser utilizado no filtro.", required: true }
+    ]
+  },
+  responseSchema: {
+    name: "PositionWithTrailerAndPlateResult[]",
+    fields: [
+      { name: "ListTrailer", type: "Array", description: "Lista de reboques associados à posição.", required: false },
+      { name: "Plate", type: "string", description: "Placa do veículo.", required: false },
+      { name: "DriverIdentification", type: "number($double)", description: "Identificação do motorista (RFID ou IButton).", required: false },
+      { name: "DocumentNumber", type: "string", description: "CPF do motorista.", required: false },
+      { name: "IdPosition", type: "integer($int64)", description: "Código identificador único da posição recebida do rastreador.", required: false },
+      { name: "EventDate", type: "string($date-time)", description: "Data da posição gerada pelo rastreador.", required: false },
+      { name: "Latitude", type: "number($double)", description: "Latitude da posição.", required: false },
+      { name: "Longitude", type: "number($double)", description: "Longitude da posição.", required: false }
     ]
   },
   presets: [
@@ -928,8 +952,33 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/ActuatorsActivation",
   description: "Método utilizado para gerar o relatório de ativação de sensores (entradas)",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "TrackedUnitList": "",
+    "MinimumPeriod": "",
+    "IntialTime": "",
+    "EndTime": "",
+    "DriverList": "",
+    "SensorList": "",
+    "ActuatorList": ""
+  },
+  schema: {
+    name: "InputOutputActivationFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório.", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. Escolha uma para filtrar o relatório.", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais.", required: false },
+      { name: "TrackedUnitList", type: "string", description: "Lista de unidades rastreadas.", required: false },
+      { name: "MinimumPeriod", type: "string($date-span)", description: "Período mínimo a ser exibido.", required: false },
+      { name: "IntialTime", type: "string($date-span)", description: "A hora incial do dia.", required: false },
+      { name: "EndTime", type: "string($date-span)", description: "A hora final do dia.", required: false },
+      { name: "DriverList", type: "string", description: "Lista de motoristas.", required: false },
+      { name: "SensorList", type: "string", description: "Lista de sensores.", required: false },
+      { name: "ActuatorList", type: "string", description: "Lista de atuadores.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -940,8 +989,33 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/AreaPassage",
   description: "Método utilizado para gerar o relatório de passagem por área",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "TrackedUnitList": "",
+    "MinimumPeriod": "",
+    "AreaCategoryList": "",
+    "AreaGroupList": "",
+    "AreaList": "",
+    "InitalTime": "",
+    "EndTime": ""
+  },
+  schema: {
+    name: "AreaPassageFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. A data máxima a ser filtrada.", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais.", required: false },
+      { name: "TrackedUnitList", type: "string", description: "Lista de unidades rastreadas.", required: false },
+      { name: "MinimumPeriod", type: "string($date-span)", description: "Período mínimo a ser exibido.", required: false },
+      { name: "AreaCategoryList", type: "string", description: "Lista de categorias de áreas/rotas.", required: false },
+      { name: "AreaGroupList", type: "string", description: "Lista de grupos de áreas/rotas.", required: false },
+      { name: "AreaList", type: "string", description: "Lista de áreas/rotas.", required: false },
+      { name: "InitalTime", type: "string($date-span)", description: "Hora incial do dia.", required: false },
+      { name: "EndTime", type: "string($date-span)", description: "Hora final do dia.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -964,8 +1038,36 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/DriverRanking",
   description: "Método utilizado para gerar o relatório de ranking de motoristas",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "DriverList": "",
+    "EmployeeTypeIntegrationCode": ""
+  },
+  schema: {
+    name: "DriverRankingFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. A data máxima a ser filtrada.", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais (códigos de integração separados por vírgula).", required: false },
+      { name: "DriverList", type: "string", description: "Lista de motoristas (códigos de integração separados por vírgula).", required: false },
+      { name: "EmployeeTypeIntegrationCode", type: "string", description: "Código de integração do cargo do funcionário.", required: false }
+    ]
+  },
+  responseSchema: {
+    name: "DriverRankingResult[]",
+    fields: [
+      { name: "OrganizationalUnit", type: "string", description: "Unidade organizacional do funcionário.", required: false },
+      { name: "Driver", type: "string", description: "Identificação do motorista.", required: false },
+      { name: "EmployeePosition", type: "string", description: "Cargo do funcionário.", required: false },
+      { name: "MaximumSpeed", type: "number($double)", description: "Velocidade máxima atingida pelo motorista no período.", required: false },
+      { name: "AverageCruiserSpeed", type: "number($double)", description: "Velocidade média de cruzeiro.", required: false },
+      { name: "AverageSpeed", type: "number($double)", description: "Velocidade média.", required: false },
+      { name: "DailyAverageGrade", type: "number($double)", description: "Nota condução segura.", required: false },
+      { name: "RPMGrade", type: "number($double)", description: "Nota perfil de condução.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -1000,8 +1102,35 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/TrackedUnitUsage",
   description: "Método utilizado para gerar o relatório de utilização de unidade rastreada (BDV)",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "TrackedUnitList": "",
+    "AreaOption": 0,
+    "AreaGroupList": "",
+    "AreaCategoryList": "",
+    "AreaList": "",
+    "MinimumPeriod": "",
+    "IntialTime": "",
+    "EndTime": ""
+  },
+  schema: {
+    name: "TrackedUnitUsageFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. A data máxima a ser filtrada.", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais a serem exibidas.", required: false },
+      { name: "TrackedUnitList", type: "string", description: "Lista de unidades rastreadas a serem exibidas.", required: false },
+      { name: "AreaOption", type: "integer($int32)", description: "Entrada/saída de áreas/rotas [1: todos | 2: Somente fora | 3: Somente dentro]", required: false },
+      { name: "AreaGroupList", type: "string", description: "Uma lista com os grupos de áreas/rotas a serem exibidos.", required: false },
+      { name: "AreaCategoryList", type: "string", description: "Uma lista com as categorias de áreas/rotas a serem exibidas.", required: false },
+      { name: "AreaList", type: "string", description: "Lista de áreas/rotas.", required: false },
+      { name: "MinimumPeriod", type: "string($date-span)", description: "Período mínimo a ser exibido.", required: false },
+      { name: "IntialTime", type: "string($date-span)", description: "A hora incial do dia.", required: false },
+      { name: "EndTime", type: "string($date-span)", description: "A hora final do dia.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -1012,8 +1141,29 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/TrackedUnitUsageConsolidated",
   description: "Método utilizado para gerar o relatório de utilização de unidade rastreada consolidado",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "ConsolidationType": 1,
+    "OrganizationalUnitList": "",
+    "TrackedUnitList": "",
+    "MinimumPeriod": "",
+    "InitialTime": "",
+    "EndTime": ""
+  },
+  schema: {
+    name: "TrackedUnitUsageConsolidatedFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data inicial. Escolha uma para filtrar o relatório.", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. A data máxima a ser filtrada.", required: true },
+      { name: "ConsolidationType", type: "integer($int32)", description: "Tipo de consolidação [1: Daily | 2: Monthly | 3: FullPeriod]", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais a serem exibidas separadas por vírgula.", required: false },
+      { name: "TrackedUnitList", type: "string", description: "Lista de unidades rastreadas a serem exibidas separadas por vírgula.", required: false },
+      { name: "MinimumPeriod", type: "string($date-span)", description: "Período mínimo a ser exibido.", required: false },
+      { name: "InitialTime", type: "string($date-span)", description: "A hora inicial do dia.", required: false },
+      { name: "EndTime", type: "string($date-span)", description: "A hora final do dia.", required: false }
+    ]
+  },
   presets: []
 },
 {
