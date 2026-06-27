@@ -1026,8 +1026,25 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/DailyConsolidatedWorkday",
   description: "Método utilizado para gerar o relatório Jornada de Trabalho consolidado diário.",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "ClosingPeriodList": "",
+    "OrganizationalUnitList": "",
+    "EmployeeList": "",
+    "JobPositionList": ""
+  },
+  schema: {
+    name: "DailyConsolidatedWorkdayFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório.", required: false },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. Escolha uma para filtrar o relatório.", required: false },
+      { name: "ClosingPeriodList", type: "string", description: "Lista de períodos de fechamento. Uma lista com os códigos de integração dos períodos de fechamento a serem exibidos, separadas por vírgula (\",\"). Vazio = todos.", required: false },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais. Uma lista com os códigos de integração das unidades organizacionais a serem exibidas, separadas por vírgula (\",\"). Vazio = todas.", required: false },
+      { name: "EmployeeList", type: "string", description: "Lista de colaboradores. Uma lista com os códigos de integração dos colaboradores a serem exibidos, separados por \",\" (vírgula). Vazio = todos.", required: false },
+      { name: "JobPositionList", type: "string", description: "Lista de cargos. Uma lista com os códigos de integração dos cargos a serem exibidos, separados por \",\" (vírgula). Vazio = todos.", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -1078,8 +1095,21 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/Maintenance/List",
   description: "Método utilizado para gerar o relatório de manutenção.",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: [
+    {
+      "PropertyName": "",
+      "Condition": "",
+      "Value": ""
+    }
+  ],
+  schema: {
+    name: "QueryCondition[]",
+    fields: [
+      { name: "PropertyName", type: "string", description: "Nome da propriedade que se deseja filtrar.", required: true },
+      { name: "Condition", type: "string", description: "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo", required: true },
+      { name: "Value", type: "object", description: "Valor a ser filtrado", required: true }
+    ]
+  },
   presets: []
 },
 {
@@ -1090,8 +1120,33 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/SensorsActivation",
   description: "Método utilizado para gerar o relatório de ativação de atuadores (saídas)",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "TrackedUnitList": "",
+    "MinimumPeriod": "",
+    "IntialTime": "",
+    "EndTime": "",
+    "DriverList": "",
+    "SensorList": "",
+    "ActuatorList": ""
+  },
+  schema: {
+    name: "InputOutputActivationFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório.", required: true },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. Escolha uma para filtrar o relatório.", required: true },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais. Um lista com os códigos de integração das unidades organizacionais a serem exibidas, separadas por vírgula (\",\"). Vazio = todas.", required: false },
+      { name: "TrackedUnitList", type: "string", description: "Lista de unidades rastreadas. Uma lista com os Ids das unidades rastreadas a serem exibidas, separados por \",\" (vírgula). Vazio = todas.", required: false },
+      { name: "MinimumPeriod", type: "string($date-span)", description: "Período mínimo a ser exibido. Somente serão retornadas as ativações que estiverem ativadas por um período maior que o valor informado.", required: false },
+      { name: "IntialTime", type: "string($date-span)", description: "A hora incial do dia. Use se quiser filtrar o horário da ativação da entrada ou saída.", required: false },
+      { name: "EndTime", type: "string($date-span)", description: "A hora final do dia. Use se quiser filtrar o horário da ativação da entrada ou saída.", required: false },
+      { name: "DriverList", type: "string", description: "Lista de motoristas. Uma lista com os códigos de integração dos motoristas a serem filtrados, separados por vírgula (\",\"). Caso seja vazia, TODOS os motoristas serão retornados.", required: false },
+      { name: "SensorList", type: "string", description: "Lista de sensores. Uma lista com os IDs dos sensores a serem filtrados, separados por vírgula (\",\"). Caso seja vazia, TODOS os sensores serão retornados. Somente para o relatório de ENTRADAS (INPUT)", required: false },
+      { name: "ActuatorList", type: "string", description: "Lista de atuadores. Uma lista com os IDs dos atuadores a serem filtrados, separados por vírgula (\",\"). Caso seja vazia, TODOS os atuadores serão retornados. Somente para o relatório de SAÍDAS (OUTPUT)", required: false }
+    ]
+  },
   presets: []
 },
 {
@@ -1174,8 +1229,23 @@ export const initialEndpoints = [
   method: "POST",
   path: "/Tracking/Report/WorkdaySteps",
   description: "Método utilizado para gerar o relatório Etapas de jornada de trabalho.",
-  defaultPayload: {},
-  schema: {},
+  defaultPayload: {
+    "StartDate": "2026-06-27T00:00:00.000Z",
+    "EndDate": "2026-06-27T23:59:59.999Z",
+    "OrganizationalUnitList": "",
+    "EmployeeList": "",
+    "JobPositionList": ""
+  },
+  schema: {
+    name: "WorkdayStepsFilterParameter",
+    fields: [
+      { name: "StartDate", type: "string($date-time)", description: "Data incial. Escolha uma para filtrar o relatório.", required: false },
+      { name: "EndDate", type: "string($date-time)", description: "Data final. Escolha uma para filtrar o relatório.", required: false },
+      { name: "OrganizationalUnitList", type: "string", description: "Lista de unidades organizacionais. Uma lista com os códigos de integração das unidades organizacionais a serem exibidas, separadas por vírgula (\",\"). Vazio = todas.", required: false },
+      { name: "EmployeeList", type: "string", description: "Lista de colaboradores. Uma lista com os códigos de integração dos colaboradores a serem exibidos, separados por \",\" (vírgula). Vazio = todos.", required: false },
+      { name: "JobPositionList", type: "string", description: "Lista de cargos. Uma lista com os códigos de integração dos cargos a serem exibidos, separados por \",\" (vírgula). Vazio = todos.", required: false }
+    ]
+  },
   presets: []
 },
 {

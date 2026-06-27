@@ -1,6 +1,6 @@
 'use client';
 import { useFirstStepsStore, Step } from '@/store/firstStepsStore';
-import { ArrowLeft, Save, Plus, Trash2, GripVertical, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, GripVertical, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -8,6 +8,10 @@ export default function FirstStepsAdmin() {
   const { steps, setSteps } = useFirstStepsStore();
   const [draftSteps, setDraftSteps] = useState<Step[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [imagePromptStep, setImagePromptStep] = useState<number | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -16,8 +20,13 @@ export default function FirstStepsAdmin() {
   }, [steps]);
 
   const handleSave = () => {
-    setSteps(draftSteps);
-    alert('Passos salvos com sucesso!');
+    setIsSaving(true);
+    setTimeout(() => {
+      setSteps(draftSteps);
+      setIsSaving(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    }, 400);
   };
 
   const addStep = () => {
@@ -79,10 +88,17 @@ export default function FirstStepsAdmin() {
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            disabled={isSaving}
+            className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            <Save className="w-4 h-4 mr-2" />
-            Salvar
+            {isSaving ? (
+              <div className="w-4 h-4 mr-2 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+            ) : showSuccess ? (
+              <CheckCircle2 className="w-4 h-4 mr-2 text-green-300" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {showSuccess ? 'Salvo!' : 'Salvar'}
           </button>
         </div>
       </div>
@@ -132,19 +148,67 @@ export default function FirstStepsAdmin() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-medium text-muted-foreground">Conteúdo (Markdown suportado)</label>
-                  <button 
-                    onClick={() => {
-                      const url = prompt('URL da imagem ou GIF (ex: https://.../imagem.png):');
-                      if (url) {
-                         const imgMarkdown = `\n![Descrição da imagem](${url})\n`;
-                         updateStep(index, 'contentMarkdown', step.contentMarkdown + imgMarkdown);
-                      }
-                    }}
-                    className="text-xs flex items-center bg-secondary/50 hover:bg-secondary text-secondary-foreground px-2 py-1 rounded transition-colors"
-                  >
-                    <ImageIcon className="w-3 h-3 mr-1" />
-                    Inserir Imagem/GIF
-                  </button>
+                  <div className="flex gap-2">
+                    {imagePromptStep === index ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          autoFocus
+                          type="text"
+                          placeholder="Cole a URL (ex: github, imgur...)"
+                          className="text-xs bg-background border border-border rounded px-2 py-1 w-64 text-foreground focus:outline-none focus:border-primary"
+                          value={imageUrl}
+                          onChange={(e) => setImageUrl(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                               let url = imageUrl;
+                               if (url.includes('github.com') && url.includes('/blob/')) {
+                                 url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+                               }
+                               const imgMarkdown = `\n![Descrição da imagem](${url})\n`;
+                               updateStep(index, 'contentMarkdown', step.contentMarkdown + imgMarkdown);
+                               setImagePromptStep(null);
+                               setImageUrl('');
+                            } else if (e.key === 'Escape') {
+                               setImagePromptStep(null);
+                               setImageUrl('');
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            let url = imageUrl;
+                            if (url.includes('github.com') && url.includes('/blob/')) {
+                               url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+                            }
+                            const imgMarkdown = `\n![Descrição da imagem](${url})\n`;
+                            updateStep(index, 'contentMarkdown', step.contentMarkdown + imgMarkdown);
+                            setImagePromptStep(null);
+                            setImageUrl('');
+                          }}
+                          className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-2 py-1.5 rounded font-medium transition-colors"
+                        >
+                          Inserir
+                        </button>
+                        <button
+                          onClick={() => {
+                            setImagePromptStep(null);
+                            setImageUrl('');
+                          }}
+                          className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1.5 rounded font-medium transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setImagePromptStep(index)}
+                        className="text-xs flex items-center bg-secondary/50 hover:bg-secondary text-secondary-foreground px-2 py-1 rounded transition-colors"
+                      >
+                        <ImageIcon className="w-3 h-3 mr-1" />
+                        Inserir Imagem (Por Link)
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <textarea
                   value={step.contentMarkdown}
