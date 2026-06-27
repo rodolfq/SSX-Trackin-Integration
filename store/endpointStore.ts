@@ -39,6 +39,7 @@ interface EndpointStore {
   removeEndpoint: (id: string) => void;
   setEndpoints: (endpoints: EndpointDef[]) => void;
   resetEndpoints: () => void;
+  syncInitialEndpoints: () => void;
 }
 
 // Using imported initialEndpoints
@@ -60,9 +61,22 @@ export const useEndpointStore = create<EndpointStore>()(
         })),
       setEndpoints: (endpoints) => set({ endpoints }),
       resetEndpoints: () => set({ endpoints: initialEndpoints as EndpointDef[] }),
+      syncInitialEndpoints: () => set((state) => {
+        const existingIds = new Set(state.endpoints.map(ep => ep.id));
+        const missing = (initialEndpoints as EndpointDef[]).filter(ep => !existingIds.has(ep.id));
+        if (missing.length > 0) {
+          return { endpoints: [...state.endpoints, ...missing] };
+        }
+        return state;
+      }),
     }),
     {
       name: 'ssx-endpoints-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          setTimeout(() => state.syncInitialEndpoints(), 0);
+        }
+      }
     }
   )
 );

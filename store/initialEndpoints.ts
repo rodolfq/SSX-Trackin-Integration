@@ -789,9 +789,21 @@ export const initialEndpoints = [
   name: "Position History List",
   method: "POST",
   path: "/Tracking/PositionHistory/List",
-  description: "Método utlizado para listar o histórico de posições dos rastreadores.",
-  defaultPayload: {},
-  schema: {},
+  description: "Método utlizado para listar o histórico de posições dos rastreadores. Pelo menos um filtro deve ser utilizado. Um máximo de 500 resultados são exibidos por vez. Exemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+  defaultPayload: [
+    {
+      "PropertyName": "string",
+      "Condition": "string"
+    }
+  ],
+  schema: {
+    name: "QueryCondition",
+    fields: [
+      { name: "PropertyName", type: "string", description: "Nome da propriedade que se deseja filtrar. (maxLength: 150, minLength: 1)", required: true },
+      { name: "Condition", type: "string", description: "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo", required: true },
+      { name: "Value", type: "any", description: "Valor a ser utilizado no filtro.", required: true }
+    ]
+  },
   presets: []
 },
 {
@@ -801,9 +813,21 @@ export const initialEndpoints = [
   name: "Position History List Soap",
   method: "POST",
   path: "/Tracking/PositionHistory/ListSoap",
-  description: "Método utlizado para listar o histórico de posições dos rastreadores.",
-  defaultPayload: {},
-  schema: {},
+  description: "Método utlizado para listar o histórico de posições dos rastreadores. Pelo menos um filtro deve ser utilizado. Exemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+  defaultPayload: [
+    {
+      "PropertyName": "string",
+      "Condition": "string"
+    }
+  ],
+  schema: {
+    name: "QueryCondition",
+    fields: [
+      { name: "PropertyName", type: "string", description: "Nome da propriedade que se deseja filtrar. (maxLength: 150, minLength: 1)", required: true },
+      { name: "Condition", type: "string", description: "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo", required: true },
+      { name: "Value", type: "any", description: "Valor a ser utilizado no filtro.", required: true }
+    ]
+  },
   presets: []
 },
 {
@@ -879,9 +903,21 @@ export const initialEndpoints = [
   name: "Position History List (v2)",
   method: "POST",
   path: "/v2/Tracking/PositionHistory/List",
-  description: "Método utlizado para listar o histórico de posições dos rastreadores com a propriedade ListTrailer",
-  defaultPayload: {},
-  schema: {},
+  description: "Método utlizado para listar o histórico de posições dos rastreadores com a propriedade ListTrailer que irá trazer todos os engates/reboques/implementos agrícolas e etc. que estiverem associados a posição. Pelo menos um filtro deve ser utilizado. Um máximo de 500 resultados são exibidos por vez. Exemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+  defaultPayload: [
+    {
+      "PropertyName": "string",
+      "Condition": "string"
+    }
+  ],
+  schema: {
+    name: "QueryCondition",
+    fields: [
+      { name: "PropertyName", type: "string", description: "Nome da propriedade que se deseja filtrar. (maxLength: 150, minLength: 1)", required: true },
+      { name: "Condition", type: "string", description: "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo", required: true },
+      { name: "Value", type: "any", description: "Valor a ser utilizado no filtro.", required: true }
+    ]
+  },
   presets: []
 },
 {
