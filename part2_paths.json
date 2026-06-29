@@ -1,0 +1,504 @@
+{
+  "paths": {
+    "/Tracking/Report/DriverRanking": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de ranking de motoristas",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverRankingFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DriverRankingResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/AreaPassage": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de passagem por área",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AreaPassageFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AreaPassageResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/TrackedUnitUsage": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de utilização de unidade rastreada (BDV)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TrackedUnitUsageFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TrackedUnitUsageResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/TrackedUnitUsageConsolidated": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de utilização de unidade rastreada consolidado (BDV Consolidado)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TrackedUnitUsageConsolidatedFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TrackedUnitUsageConsolidatedResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/ActuatorsActivation": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de ativação de sensores (entradas)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InputOutputActivationFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InputOutputActivationResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/SensorsActivation": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de ativação de atuadores (saídas)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InputOutputActivationFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InputOutputActivationResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/DailyConsolidatedWorkday": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório Jornada de Trabalho consolidado diário.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DailyConsolidatedWorkdayFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DailyConsolidatedWorkdayResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/WorkdaySteps": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório Etapas de jornada de trabalho.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WorkdayStepsFilterParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/WorkdayStepsResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/Maintenance/List": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "Método utilizado para gerar o relatório de manutenção.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MaintenanceListResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleCompatible/List": {
+      "post": {
+        "tags": ["RuleCompatible"],
+        "summary": "Método utlizado para listar as regras compátíveis com rastreador/unidades rastreadas. Pelo menos um filtro deve ser utilizado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RuleCompatibleListParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RuleCompatibleResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleCompatible/SetAssociationOfTrackedUnitWithRule": {
+      "post": {
+        "tags": ["RuleCompatible"],
+        "summary": "Método utlizado para associar uma regra a uma unidade rastreada.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TrackedUnitAndRuleParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListRulesByUnitTracked": {
+      "post": {
+        "tags": ["RuleList"],
+        "summary": "Método utlizado para listar regras associadas a uma unidade rastreada.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RulesByUnitTrackedResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListUnitTrackedByRule": {
+      "post": {
+        "tags": ["RuleList"],
+        "summary": "Método utlizado para listar unidades rastreadas associadas a uma regra.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UnitTrackedByRuleParameter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/UnitTrackedByRuleResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListRuleOfLoggedUser": {
+      "post": {
+        "tags": ["RuleList"],
+        "summary": "Método utlizado para listar as regras do usuário logado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RulesByLoggedUserResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleViolation/List": {
+      "post": {
+        "tags": ["RuleViolation"],
+        "summary": "Método utlizado para listar o histórico de violações de regra das unidades rastreadas. Pelo menos um filtro deve ser utilizado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RuleViolationResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleViolation/v2/List": {
+      "post": {
+        "tags": ["RuleViolation"],
+        "summary": "Método utlizado para listar o histórico de violações de regra das unidades rastreadas. Pelo menos um filtro deve ser utilizado. Obs.: Versão V2 trazendo o código de integração da Unidade Organizacional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RuleViolationResultV2" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Sensor/List": {
+      "post": {
+        "tags": ["Sensor"],
+        "summary": "Método utlizado para listar os sensores dos rastreadores.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SensorResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Telemetry/List": {
+      "post": {
+        "tags": ["Telemetry"],
+        "summary": "Método utlizado para listar as telemetrias dos rastreadores.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TelemetryResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Trailer/List": {
+      "post": {
+        "tags": ["Trailer"],
+        "summary": "Método utilizado para listar reboques ( carretas, implementos agrícolas e etc ).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QueryCondition" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TrailerResult" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Videotelemetry/GetURLStreamLink": {
+      "post": {
+        "tags": ["Videotelemetry"],
+        "summary": "Retorna a URL para consumo de vídeo ao vivo, baseado no canal solicitado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VideotelemetryRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VideoTelemetryResult" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

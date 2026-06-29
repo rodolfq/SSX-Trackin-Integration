@@ -1,0 +1,211 @@
+{
+  "components": {
+    "schemas": {
+      "DriverRankingFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "OrganizationalUnitList": { "type": "string" },
+          "DriverList": { "type": "string" },
+          "EmployeeTypeIntegrationCode": { "type": "string" }
+        }
+      },
+      "DriverRankingResult": {
+        "type": "object",
+        "properties": {
+          "OrganizationalUnit": { "type": "string" },
+          "Driver": { "type": "string" },
+          "EmployeePosition": { "type": "string" },
+          "MaximumSpeed": { "type": "number" },
+          "AverageCruiserSpeed": { "type": "number" },
+          "AverageSpeed": { "type": "number" },
+          "MaximumRPM": { "type": "number" },
+          "AverageRPM": { "type": "number" },
+          "IdleMotorTime": { "type": "number" },
+          "Displacement": { "type": "number" },
+          "Duration": { "type": "number" }
+        }
+      },
+      "AreaPassageFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "OrganizationalUnitList": { "type": "string" },
+          "TrackedUnitList": { "type": "string" }
+        }
+      },
+      "AreaPassageResult": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "Duration": { "type": "number" },
+          "Driver": { "type": "string" }
+        }
+      },
+      "TrackedUnitUsageFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "OrganizationalUnitList": { "type": "string" }
+        }
+      },
+      "TrackedUnitUsageResult": {
+        "type": "object",
+        "properties": {
+          "Driver": { "type": "string" },
+          "TrackerOrder": { "type": "integer" }
+        }
+      },
+      "TrackedUnitUsageConsolidatedFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "ConsolidationType": { "type": "integer" }
+        }
+      },
+      "TrackedUnitUsageConsolidatedResult": {
+        "type": "object",
+        "properties": {
+          "TrackerOrder": { "type": "integer" }
+        }
+      },
+      "InputOutputActivationFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" }
+        }
+      },
+      "InputOutputActivationResult": {
+        "type": "object",
+        "properties": {
+          "TrackerOrder": { "type": "integer" }
+        }
+      },
+      "DailyConsolidatedWorkdayFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" }
+        }
+      },
+      "DailyConsolidatedWorkdayResult": {
+        "type": "object",
+        "properties": {
+          "Employee": { "type": "string" }
+        }
+      },
+      "WorkdayStepsFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": { "type": "string" },
+          "EndDate": { "type": "string" }
+        }
+      },
+      "WorkdayStepsResult": {
+        "type": "object",
+        "properties": {
+          "WorkdayStepFunctionId": { "type": "integer" }
+        }
+      },
+      "MaintenanceListItensResult": {
+        "type": "object",
+        "properties": {
+          "Code": { "type": "string" }
+        }
+      },
+      "MaintenanceListResult": {
+        "type": "object",
+        "properties": {
+          "MaintenanceCode": { "type": "integer" }
+        }
+      },
+      "RuleCompatibleListParameter": {
+        "type": "object",
+        "properties": {
+          "TrackingUnitIntegrationCode": { "type": "string" }
+        }
+      },
+      "RuleCompatibleResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": { "type": "string" }
+        }
+      },
+      "TrackedUnitAndRuleParameter": {
+        "type": "object",
+        "properties": {
+          "TrackedUnitIntegrationCode": { "type": "string" },
+          "RuleIntegrationCode": { "type": "string" },
+          "TrackedUnitOrder": { "type": "integer" }
+        }
+      },
+      "RulesByUnitTrackedResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": { "type": "string" }
+        }
+      },
+      "UnitTrackedByRuleParameter": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": { "type": "string" }
+        }
+      },
+      "UnitTrackedByRuleResult": {
+        "type": "object",
+        "properties": {
+          "TrackedUnit": { "type": "string" }
+        }
+      },
+      "RulesByLoggedUserResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": { "type": "string" }
+        }
+      },
+      "RuleViolationResult": {
+        "type": "object",
+        "properties": {
+          "IdRuleViolation": { "type": "integer" }
+        }
+      },
+      "RuleViolationResultV2": {
+        "type": "object",
+        "properties": {
+          "IdRuleViolation": { "type": "integer" }
+        }
+      },
+      "SensorResult": {
+        "type": "object",
+        "properties": {
+          "IdSensor": { "type": "integer" }
+        }
+      },
+      "TelemetryResult": {
+        "type": "object",
+        "properties": {
+          "IdTelemetry": { "type": "integer" }
+        }
+      },
+      "VideotelemetryRequest": {
+        "type": "object",
+        "properties": {
+          "VehicleIntegrationCode": { "type": "string" },
+          "Channel": { "type": "integer" }
+        }
+      },
+      "VideoTelemetryResult": {
+        "type": "object",
+        "properties": {
+          "URLStream": { "type": "string" }
+        }
+      }
+    }
+  }
+}

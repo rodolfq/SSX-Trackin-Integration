@@ -210,8 +210,8 @@ export function Sidebar() {
                         </button>
                         {isExpanded && (
                           <ul className="ml-4 border-l border-border mt-1 space-y-1">
-                            {item.children?.map((child: any) => (
-                              <li key={child.name}>
+                            {item.children?.map((child: any, idx: number) => (
+                              <li key={child.href || `${child.name}-${idx}`}>
                                 <Link
                                   href={child.href}
                                   className={cn(

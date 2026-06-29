@@ -32,6 +32,32 @@
 
 @layer base {
   :root {
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #0ea5e9;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #0ea5e9;
+    --radius: 0.5rem;
+    --scrollbar: rgba(0, 0, 0, 0.15);
+    --scrollbar-hover: rgba(0, 0, 0, 0.25);
+    --scrollbar-active: rgba(0, 0, 0, 0.35);
+  }
+
+  .dark {
     --background: #0b0e14;
     --foreground: #cbd5e1;
     --card: #0d1117;
@@ -51,7 +77,9 @@
     --border: #1e293b;
     --input: #1e293b;
     --ring: #0ea5e9;
-    --radius: 0.5rem;
+    --scrollbar: rgba(255, 255, 255, 0.25);
+    --scrollbar-hover: rgba(255, 255, 255, 0.45);
+    --scrollbar-active: rgba(255, 255, 255, 0.65);
   }
 }
 
@@ -72,7 +100,7 @@
 /* Camada global de fallback nativo para todos os elementos com overflow */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -87,17 +115,17 @@
 *::-webkit-scrollbar-thumb {
   width: 6px;
   height: 6px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--scrollbar);
   border-radius: 999px;
   transition: background-color 0.2s ease-in-out;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: var(--scrollbar-hover);
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--scrollbar-active);
 }
 
 /* Utilitário Tailwind reutilizável e configuração de OverlayScrollbars */
@@ -112,24 +140,24 @@
   --os-track-bg-hover: transparent !important;
   --os-track-bg-active: transparent !important;
   --os-handle-border-radius: 999px !important;
-  --os-handle-bg: rgba(255, 255, 255, 0.25) !important;
-  --os-handle-bg-hover: rgba(255, 255, 255, 0.45) !important;
-  --os-handle-bg-active: rgba(255, 255, 255, 0.65) !important;
+  --os-handle-bg: var(--scrollbar) !important;
+  --os-handle-bg-hover: var(--scrollbar-hover) !important;
+  --os-handle-bg-active: var(--scrollbar-active) !important;
 }
 
 .os-scrollbar .os-scrollbar-handle {
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: var(--scrollbar) !important;
   transition: background-color 0.2s ease-in-out !important;
 }
 
 .os-scrollbar:hover .os-scrollbar-handle,
 .os-scrollbar .os-scrollbar-handle:hover {
-  background: rgba(255, 255, 255, 0.45) !important;
+  background: var(--scrollbar-hover) !important;
 }
 
 .os-scrollbar .os-scrollbar-handle:active {
-  background: rgba(255, 255, 255, 0.65) !important;
+  background: var(--scrollbar-active) !important;
 }
 
 .os-scrollbar .os-scrollbar-track {

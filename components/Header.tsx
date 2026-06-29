@@ -3,6 +3,7 @@
 import { Search } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   const { token } = useAuthStore();
@@ -17,7 +18,7 @@ export function Header() {
           <input 
             type="text" 
             placeholder="Search endpoints..." 
-            className="bg-background border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-sm w-full focus:outline-none focus:border-primary transition-colors text-foreground"
+            className="bg-background border border-border rounded-lg py-2 pl-10 pr-4 text-sm w-full focus:outline-none focus:border-primary transition-colors text-foreground"
           />
         </div>
       </div>
@@ -40,9 +41,10 @@ export function Header() {
             Sair
           </button>
         )}
+        <ThemeToggle />
         <Link 
           href="/auth" 
-          className="bg-primary hover:bg-sky-600 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           {token ? 'Gerenciar Token' : 'Login'}
         </Link>

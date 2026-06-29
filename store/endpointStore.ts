@@ -65,7 +65,12 @@ export const useEndpointStore = create<EndpointStore>()(
       syncInitialEndpoints: () => set((state) => {
         const initialMap = new Map((initialEndpoints as EndpointDef[]).map(ep => [ep.id, ep]));
         
-        const updatedEndpoints = state.endpoints.map(ep => {
+        // Only keep custom endpoints (not in API Reference) or ones that still exist in initialEndpoints
+        const filteredStateEndpoints = state.endpoints.filter(ep => 
+          ep.category !== 'API Reference' || initialMap.has(ep.id)
+        );
+
+        const updatedEndpoints = filteredStateEndpoints.map(ep => {
           if (initialMap.has(ep.id)) {
             const initial = initialMap.get(ep.id)!;
             return {
@@ -82,14 +87,14 @@ export const useEndpointStore = create<EndpointStore>()(
           return ep;
         });
 
-        const existingIds = new Set(state.endpoints.map(ep => ep.id));
+        const existingIds = new Set(filteredStateEndpoints.map(ep => ep.id));
         const missing = (initialEndpoints as EndpointDef[]).filter(ep => !existingIds.has(ep.id));
         
         return { endpoints: [...updatedEndpoints, ...missing] };
       }),
     }),
     {
-      name: 'ssx-endpoints-storage',
+      name: 'ssx-endpoints-storage-v2',
       onRehydrateStorage: () => (state) => {
         if (state) {
           setTimeout(() => state.syncInitialEndpoints(), 0);

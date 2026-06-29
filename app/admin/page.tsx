@@ -56,9 +56,9 @@ export default function AdminDashboard() {
           <p className="text-muted-foreground text-sm mb-4">
             Ferramenta para ingestão automática de arquivos Swagger/OpenAPI.
           </p>
-          <button className="text-primary text-sm font-medium hover:underline">
+          <Link href="/admin/openapi" className="text-primary text-sm font-medium hover:underline inline-flex items-center">
             Acessar Importador →
-          </button>
+          </Link>
         </div>
       </div>
     </div>

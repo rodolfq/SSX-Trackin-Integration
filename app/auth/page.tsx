@@ -4,9 +4,11 @@ import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Key, Copy, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { Editor } from '@monaco-editor/react';
+import { useTheme } from 'next-themes';
 
 export default function AuthPage() {
   const { token, setAuth } = useAuthStore();
+  const { resolvedTheme } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [hashAuth, setHashAuth] = useState('');
@@ -187,7 +189,7 @@ export default function AuthPage() {
                 <Editor
                   height="100%"
                   defaultLanguage="json"
-                  theme="vs-dark"
+                  theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                   value={JSON.stringify(response.data || response, null, 2)}
                   options={outputEditorOptions}
                 />

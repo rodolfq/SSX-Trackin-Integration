@@ -1,0 +1,2135 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SSX Tracking Integration",
+    "description": "Documentação de integração SSX voltada para rastreamento e gestão de ativos.",
+    "version": "v1"
+  },
+  "paths": {
+    "/Login": {
+      "post": {
+        "tags": [
+          "_Login"
+        ],
+        "summary": "Método utilizado para geração do token.",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "query",
+            "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas.",
+            "required": true,
+            "schema": {
+              "maxLength": 150,
+              "minLength": 5,
+              "type": "string",
+              "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas."
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas.",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "minLength": 6,
+              "type": "string",
+              "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas."
+            }
+          },
+          {
+            "name": "Hashcentral",
+            "in": "query",
+            "description": "Código único de identificação da Central. Esse campo deve ser preenchido caso o login não seja um email.",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação da Central. Esse campo deve ser preenchido caso o login não seja um email.",
+              "nullable": true
+            }
+          },
+          {
+            "name": "HashAuth",
+            "in": "query",
+            "description": "Código único de identificação da integração. Esse campo deverá ser preenchido nos casos abaixo: \r\n\r\n1) Utilização dos métodos: \r\n- /Tracking/PositionHistory/List\r\n- /v2/Tracking/PositionHistory/List\r\n- /Tracking/RuleViolation/List. \r\n\r\nPara estes métodos o cliente deverá ter o Produto WebService liberado, bem como a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" criada no SSX.\r\n\r\n2) Utilização dos métodos da API \"SSX Tracking Integration App\". Para a requisição dos métodos pertencentes a esta API, o cliente deverá ter a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" no SSX. (*)Essa Integração possui uma cobrança adicional.\r\n\r\nPara estes casos, o parâmetro será obrigatório para identificação das unidades rastreadas que farão parte da integração.",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação da integração. Esse campo deverá ser preenchido nos casos abaixo: \r\n\r\n1) Utilização dos métodos: \r\n- /Tracking/PositionHistory/List\r\n- /v2/Tracking/PositionHistory/List\r\n- /Tracking/RuleViolation/List. \r\n\r\nPara estes métodos o cliente deverá ter o Produto WebService liberado, bem como a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" criada no SSX.\r\n\r\n2) Utilização dos métodos da API \"SSX Tracking Integration App\". Para a requisição dos métodos pertencentes a esta API, o cliente deverá ter a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" no SSX. (*)Essa Integração possui uma cobrança adicional.\r\n\r\nPara estes casos, o parâmetro será obrigatório para identificação das unidades rastreadas que farão parte da integração.",
+              "nullable": true
+            }
+          },
+          {
+            "name": "ClientIntegrationCodeBus",
+            "in": "query",
+            "description": "Código único de identificação do cliente do Global Bus no SSX",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação do cliente do Global Bus no SSX",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Usuário ou senha inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "416": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Actuator/List": {
+      "post": {
+        "tags": [
+          "Actuator"
+        ],
+        "summary": "Método utlizado para listar os atuadores dos rastreadores.",
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActuatorResult"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActuatorResult"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActuatorResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Command/SendFreeTextMessage": {
+      "post": {
+        "tags": [
+          "Command"
+        ],
+        "summary": "Método usado para envio de mensagem de texto livre do periférico/teclado Virloc10",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendFreeTextMessageParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Command/GetCommandStatus": {
+      "post": {
+        "tags": [
+          "Command"
+        ],
+        "summary": "Método usado para listar o status do comando enviado.",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommandStatusParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandStatusResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Event/List": {
+      "post": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Método utlizado para listar os eventos dos rastreadores.",
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventResult"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventResult"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Fuel/Insert": {
+      "post": {
+        "tags": [
+          "Fuel"
+        ],
+        "summary": "Método utlizado para inserir um abastecimento.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FuelInsertParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuelInsertResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Fuel/InsertList": {
+      "post": {
+        "tags": [
+          "Fuel"
+        ],
+        "summary": "Método utlizado para inserir vários abastecimentos.",
+        "requestBody": {
+          "description": "Lista de abastecimentos.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FuelInsertParameter"
+                },
+                "description": "Lista de abastecimentos."
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuelListInsertResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Fuel/List": {
+      "post": {
+        "tags": [
+          "Fuel"
+        ],
+        "summary": "Método utlizado para listar abastecimentos.",
+        "requestBody": {
+          "description": "Utilizado para filtrar o resultado da consulta. Ex.: [{\"PropertyName\": \"Name\",\"Condition\": \"Equal\",\"Value\": \"xyz\"}]",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "description": "Utilizado para filtrar o resultado da consulta. Ex.: [{\"PropertyName\": \"Name\",\"Condition\": \"Equal\",\"Value\": \"xyz\"}]",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FuelListResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Message/List": {
+      "post": {
+        "tags": [
+          "Message"
+        ],
+        "summary": "Método utlizado para listar as mensagens trocadas entre o Portal, APP Onboard e teclado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Message/SendToOnboard": {
+      "post": {
+        "tags": [
+          "Message"
+        ],
+        "summary": "Método utlizado para enviar mensagens para o SSX Onboard.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardMessageSendParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardMessageSendResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Message/CheckSendStatusOnboard": {
+      "post": {
+        "tags": [
+          "Message"
+        ],
+        "summary": "Método utlizado para verificar o status do envio da mensagem.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageStatusParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageStatusResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Person/ListPerson": {
+      "post": {
+        "tags": [
+          "Person"
+        ],
+        "summary": "Método utlizado para listar as pessoas dos cliente.",
+        "requestBody": {
+          "description": "Utilizado para filtrar o resultado da consulta.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "description": "Utilizado para filtrar o resultado da consulta.",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResultListPerson"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Person/ListPersonRole": {
+      "post": {
+        "tags": [
+          "Person"
+        ],
+        "summary": "Método utlizado para listar os cargos dos funcionários.",
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonRoleResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Person/InsertPerson": {
+      "post": {
+        "tags": [
+          "Person"
+        ],
+        "summary": "Método utilizado para inserir uma pessoa.",
+        "requestBody": {
+          "description": "Dados da pessoa para criação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonInsertParameter_Tracking"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Person/UpdatePerson": {
+      "post": {
+        "tags": [
+          "Person"
+        ],
+        "summary": "Método utlizado para atualizar uma pessoa\r\nSe você passar a proprieade InsertIfNotExists = true, o sistema irá cadastrar a pessoa automaticamente caso não seja encontrado no banco de dados.",
+        "requestBody": {
+          "description": "Dados da pessoa para atualização.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonUpdateParameter_Tracking"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo."
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/Person/AutoGenerateIntegrationCode": {
+      "post": {
+        "tags": [
+          "Person"
+        ],
+        "summary": "Método utilizado para gerar automaticamente um código de integração (Do cliente final) para as pessoas que ainda estão com essa propriedade nula no banco de dados do SSX. Atualiza somente as pessoas que sejam do mesmo cliente do usuário logado",
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/v3/Tracking/PositionHistory/List": {
+      "post": {
+        "tags": [
+          "PositionHistory"
+        ],
+        "summary": "Método utlizado para listar o histórico de posições dos rastreadores com o adendo das propriedades Plate (placa do  veículo), ListTrailer que irá trazer todos os engates/reboques/implementos agrícolas e etc. que estiverem associados a posição, DocumentNumber que trará o CPF do motorista e DriverIdentification com a identificação do motorista através do RFID ou IButton.\r\nPelo menos um filtro deve ser utilizado. Um máximo de 500 resultados são exibidos por vez.\r\nExemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PositionWithTrailerAndPlateResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/PositionHistory/List": {
+      "post": {
+        "tags": [
+          "PositionHistory"
+        ],
+        "summary": "Método utlizado para listar o histórico de posições dos rastreadores. Pelo menos um filtro deve ser utilizado. \r\nUm máximo de 500 resultados são exibidos por vez.\r\nExemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PositionResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Tracking/PositionHistory/ListSoap": {
+      "post": {
+        "tags": [
+          "PositionHistory"
+        ],
+        "summary": "Método utlizado para listar o histórico de posições dos rastreadores. Pelo menos um filtro deve ser utilizado.\r\nExemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SoapPositionResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "430": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/v2/Tracking/PositionHistory/List": {
+      "post": {
+        "tags": [
+          "PositionHistory"
+        ],
+        "summary": "Método utlizado para listar o histórico de posições dos rastreadores com a propriedade ListTrailer que irá trazer todos os engates/reboques/implementos agrícolas e etc. que estiverem associados a posição.\r\nPelo menos um filtro deve ser utilizado. Um máximo de 500 resultados são exibidos por vez.\r\nExemplo de filtro: [{\"PropertyName\": \"TrackedUnitIntegrationCode\",\"Condition\": \"=\",\"Value\": \"0001\"}]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PositionWithTrailerResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/DriverRanking": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de ranking de motoristas",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverRankingFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DriverRankingResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/AreaPassage": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de passagem por área",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaPassageFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AreaPassageResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/TrackedUnitUsage": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de utilização de unidade rastreada (BDV)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackedUnitUsageFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedUnitUsageResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/TrackedUnitUsageConsolidated": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de utilização de unidade rastreada consolidado (BDV Consolidado)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackedUnitUsageConsolidatedFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedUnitUsageConsolidatedResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/ActuatorsActivation": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de ativação de sensores (entradas)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputOutputActivationFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InputOutputActivationResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/SensorsActivation": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de ativação de atuadores (saídas)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputOutputActivationFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InputOutputActivationResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/DailyConsolidatedWorkday": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório Jornada de Trabalho consolidado diário.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyConsolidatedWorkdayFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyConsolidatedWorkdayResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/WorkdaySteps": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório Etapas de jornada de trabalho.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkdayStepsFilterParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkdayStepsResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Report/Maintenance/List": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Método utilizado para gerar o relatório de manutenção.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MaintenanceListResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleCompatible/List": {
+      "post": {
+        "tags": [
+          "RuleCompatible"
+        ],
+        "summary": "Método utlizado para listar as regras compátíveis com rastreador/unidades rastreadas. Pelo menos um filtro deve ser utilizado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleCompatibleListParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RuleCompatibleResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleCompatible/SetAssociationOfTrackedUnitWithRule": {
+      "post": {
+        "tags": [
+          "RuleCompatible"
+        ],
+        "summary": "Método utlizado para associar uma regra a uma unidade rastreada.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackedUnitAndRuleParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListRulesByUnitTracked": {
+      "post": {
+        "tags": [
+          "RuleList"
+        ],
+        "summary": "Método utlizado para listar regras associadas a uma unidade rastreada.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RulesByUnitTrackedResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListUnitTrackedByRule": {
+      "post": {
+        "tags": [
+          "RuleList"
+        ],
+        "summary": "Método utlizado para listar unidades rastreadas associadas a uma regra.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitTrackedByRuleParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UnitTrackedByRuleResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleList/ListRuleOfLoggedUser": {
+      "post": {
+        "tags": [
+          "RuleList"
+        ],
+        "summary": "Método utlizado para listar as regras do usuário logado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RulesByLoggedUserResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleViolation/List": {
+      "post": {
+        "tags": [
+          "RuleViolation"
+        ],
+        "summary": "Método utlizado para listar o histórico de violações de regra das unidades rastreadas. Pelo menos um filtro deve ser utilizado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RuleViolationResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/RuleViolation/v2/List": {
+      "post": {
+        "tags": [
+          "RuleViolation"
+        ],
+        "summary": "Método utlizado para listar o histórico de violações de regra das unidades rastreadas. Pelo menos um filtro deve ser utilizado. Obs.: Versão V2 trazendo o código de integração da Unidade Organizacional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RuleViolationResultV2"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Sensor/List": {
+      "post": {
+        "tags": [
+          "Sensor"
+        ],
+        "summary": "Método utlizado para listar os sensores dos rastreadores.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SensorResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Telemetry/List": {
+      "post": {
+        "tags": [
+          "Telemetry"
+        ],
+        "summary": "Método utlizado para listar as telemetrias dos rastreadores.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TelemetryResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Trailer/List": {
+      "post": {
+        "tags": [
+          "Trailer"
+        ],
+        "summary": "Método utilizado para listar reboques ( carretas, implementos agrícolas e etc ).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QueryCondition"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrailerResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Tracking/Videotelemetry/GetURLStreamLink": {
+      "post": {
+        "tags": [
+          "Videotelemetry"
+        ],
+        "summary": "Retorna a URL para consumo de vídeo ao vivo, baseado no canal solicitado.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideotelemetryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoTelemetryResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ResultToken": {
+        "type": "object",
+        "properties": {
+          "AccessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "ExpiresIn": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ResultError": {
+        "type": "object",
+        "properties": {
+          "Message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "QueryCondition": {
+        "required": [
+          "Condition",
+          "PropertyName",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "PropertyName": {
+            "type": "string"
+          },
+          "Condition": {
+            "type": "string"
+          },
+          "Value": {
+            "description": "Valor a ser utilizado no filtro."
+          }
+        }
+      },
+      "DriverRankingFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          },
+          "OrganizationalUnitList": {
+            "type": "string"
+          },
+          "DriverList": {
+            "type": "string"
+          },
+          "EmployeeTypeIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "DriverRankingResult": {
+        "type": "object",
+        "properties": {
+          "OrganizationalUnit": {
+            "type": "string"
+          },
+          "Driver": {
+            "type": "string"
+          },
+          "EmployeePosition": {
+            "type": "string"
+          },
+          "MaximumSpeed": {
+            "type": "number"
+          },
+          "AverageCruiserSpeed": {
+            "type": "number"
+          },
+          "AverageSpeed": {
+            "type": "number"
+          },
+          "MaximumRPM": {
+            "type": "number"
+          },
+          "AverageRPM": {
+            "type": "number"
+          },
+          "IdleMotorTime": {
+            "type": "number"
+          },
+          "Displacement": {
+            "type": "number"
+          },
+          "Duration": {
+            "type": "number"
+          }
+        }
+      },
+      "AreaPassageFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          },
+          "OrganizationalUnitList": {
+            "type": "string"
+          },
+          "TrackedUnitList": {
+            "type": "string"
+          }
+        }
+      },
+      "AreaPassageResult": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          },
+          "Duration": {
+            "type": "number"
+          },
+          "Driver": {
+            "type": "string"
+          }
+        }
+      },
+      "TrackedUnitUsageFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          },
+          "OrganizationalUnitList": {
+            "type": "string"
+          }
+        }
+      },
+      "TrackedUnitUsageResult": {
+        "type": "object",
+        "properties": {
+          "Driver": {
+            "type": "string"
+          },
+          "TrackerOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "TrackedUnitUsageConsolidatedFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          },
+          "ConsolidationType": {
+            "type": "integer"
+          }
+        }
+      },
+      "TrackedUnitUsageConsolidatedResult": {
+        "type": "object",
+        "properties": {
+          "TrackerOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "InputOutputActivationFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          }
+        }
+      },
+      "InputOutputActivationResult": {
+        "type": "object",
+        "properties": {
+          "TrackerOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "DailyConsolidatedWorkdayFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          }
+        }
+      },
+      "DailyConsolidatedWorkdayResult": {
+        "type": "object",
+        "properties": {
+          "Employee": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkdayStepsFilterParameter": {
+        "type": "object",
+        "properties": {
+          "StartDate": {
+            "type": "string"
+          },
+          "EndDate": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkdayStepsResult": {
+        "type": "object",
+        "properties": {
+          "WorkdayStepFunctionId": {
+            "type": "integer"
+          }
+        }
+      },
+      "MaintenanceListItensResult": {
+        "type": "object",
+        "properties": {
+          "Code": {
+            "type": "string"
+          }
+        }
+      },
+      "MaintenanceListResult": {
+        "type": "object",
+        "properties": {
+          "MaintenanceCode": {
+            "type": "integer"
+          }
+        }
+      },
+      "RuleCompatibleListParameter": {
+        "type": "object",
+        "properties": {
+          "TrackingUnitIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "RuleCompatibleResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "TrackedUnitAndRuleParameter": {
+        "type": "object",
+        "properties": {
+          "TrackedUnitIntegrationCode": {
+            "type": "string"
+          },
+          "RuleIntegrationCode": {
+            "type": "string"
+          },
+          "TrackedUnitOrder": {
+            "type": "integer"
+          }
+        }
+      },
+      "RulesByUnitTrackedResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "UnitTrackedByRuleParameter": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "UnitTrackedByRuleResult": {
+        "type": "object",
+        "properties": {
+          "TrackedUnit": {
+            "type": "string"
+          }
+        }
+      },
+      "RulesByLoggedUserResult": {
+        "type": "object",
+        "properties": {
+          "RuleIntegrationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "RuleViolationResult": {
+        "type": "object",
+        "properties": {
+          "IdRuleViolation": {
+            "type": "integer"
+          }
+        }
+      },
+      "RuleViolationResultV2": {
+        "type": "object",
+        "properties": {
+          "IdRuleViolation": {
+            "type": "integer"
+          }
+        }
+      },
+      "SensorResult": {
+        "type": "object",
+        "properties": {
+          "IdSensor": {
+            "type": "integer"
+          }
+        }
+      },
+      "TelemetryResult": {
+        "type": "object",
+        "properties": {
+          "IdTelemetry": {
+            "type": "integer"
+          }
+        }
+      },
+      "VideotelemetryRequest": {
+        "type": "object",
+        "properties": {
+          "VehicleIntegrationCode": {
+            "type": "string"
+          },
+          "Channel": {
+            "type": "integer"
+          }
+        }
+      },
+      "VideoTelemetryResult": {
+        "type": "object",
+        "properties": {
+          "URLStream": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

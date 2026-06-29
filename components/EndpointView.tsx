@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Editor } from '@monaco-editor/react';
 import { Play, Loader2, Lock, Unlock, Clock, AlertCircle } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
+import { useTheme } from 'next-themes';
 
 export interface EndpointSchemaField {
   name: string;
@@ -49,6 +50,7 @@ export function EndpointView({
   responseSchema
 }: EndpointViewProps) {
   const { token } = useAuthStore();
+  const { resolvedTheme } = useTheme();
   const [payload, setPayload] = useState(JSON.stringify(defaultPayload, null, 2));
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
@@ -333,7 +335,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
       </AppScrollbar>
 
       {/* Playground Column */}
-      <div className="w-full lg:w-[450px] xl:w-[500px] 2xl:w-[600px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-[#010409] flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
+      <div className="w-full lg:w-[450px] xl:w-[500px] 2xl:w-[600px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-secondary/20 flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
         {/* Auth Status Banner */}
         {!token ? (
            <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex items-center gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
@@ -388,7 +390,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                 )}
                 <button 
                   onClick={handleCopySnippet}
-                  className="text-[10px] font-sans bg-secondary hover:bg-slate-700 text-foreground px-2 py-1 rounded transition-colors"
+                  className="text-[10px] font-sans bg-secondary hover:bg-secondary-foreground/10 text-foreground px-2 py-1 rounded transition-colors"
                 >
                   {snippetCopied ? 'Copiado!' : 'Copiar'}
                 </button>
@@ -401,7 +403,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                  <Editor
                   height="100%"
                   language={activeTab === 'json' ? 'json' : activeTab} // JSON editor for payload, others for code
-                  theme="vs-dark"
+                  theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                   value={activeTab === 'json' ? payload : generateCodeSnippet(activeTab)}
                   onChange={activeTab === 'json' ? (val) => setPayload(val || '') : undefined}
                   options={editorOptions}
@@ -448,7 +450,7 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
                 <Editor
                   height="100%"
                   defaultLanguage="json"
-                  theme="vs-dark"
+                  theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
                   value={JSON.stringify(response, null, 2)}
                   options={outputEditorOptions}
                 />
