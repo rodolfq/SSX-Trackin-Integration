@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
+import { TokenTimer } from './TokenTimer';
 
 export function Header() {
   const { token } = useAuthStore();
@@ -24,9 +25,12 @@ export function Header() {
       </div>
       <div className="flex items-center gap-6">
         {token && (
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Token</span>
-            <span className="text-xs font-mono text-primary">{token.substring(0, 10)}...{token.substring(token.length - 4)}</span>
+          <div className="flex items-center gap-4 border-r border-border pr-6">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Token</span>
+              <span className="text-xs font-mono text-primary">{token.substring(0, 10)}...{token.substring(token.length - 4)}</span>
+            </div>
+            <TokenTimer />
           </div>
         )}
         {token && (

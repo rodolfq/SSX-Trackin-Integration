@@ -35,6 +35,7 @@ const staticNavigation = [
     items: [
       { name: 'Filters Catalog', href: '/filters', icon: Search },
       { name: 'Telemetries Catalog', href: '/telemetries', icon: Activity },
+      { name: 'Live Tracking Map', href: '/tracking-map', icon: MapPin },
       { name: 'Admin Panel', href: '/admin', icon: Settings },
     ]
   }
