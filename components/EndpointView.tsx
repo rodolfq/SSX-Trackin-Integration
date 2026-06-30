@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Editor } from '@monaco-editor/react';
-import { Play, Loader2, Lock, Unlock, Clock, AlertCircle } from 'lucide-react';
+import { Play, Loader2, Lock, Unlock, Clock, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
 import { useTheme } from 'next-themes';
 
@@ -56,6 +56,7 @@ export function EndpointView({
   const [response, setResponse] = useState<any>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [status, setStatus] = useState<number | null>(null);
+  const [isOutputExpanded, setIsOutputExpanded] = useState(false);
 
   const handleExecute = async () => {
     setIsLoading(true);
@@ -358,78 +359,89 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
         </div>
 
         {/* Editor Simulator */}
-        <div className="flex-1 p-6 font-mono text-[13px] leading-relaxed flex flex-col min-h-0">
-          <div className="bg-card rounded-lg border border-border h-full flex flex-col overflow-hidden">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-border bg-secondary/50">
-              <span className="text-muted-foreground text-[10px] uppercase tracking-tighter font-sans font-medium">Editor de Payload</span>
-              <div className="flex gap-2 items-center">
-                {(presets?.length ?? 0) > 0 && (
-                  <select 
-                    className="text-[10px] font-sans bg-secondary border border-border text-foreground px-2 py-1 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary max-w-[150px] truncate"
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        const selected = presets?.find(p => p.name === e.target.value);
-                        if (selected) {
-                          let payloadStr = JSON.stringify(selected.payload, null, 2);
-                          if (payloadStr.includes('"LastIdPosition"')) {
-                            const lastId = typeof window !== 'undefined' ? window.localStorage.getItem('lastIdPosition') : null;
-                            if (lastId) {
-                              payloadStr = payloadStr.replace(/"LastIdPosition"/g, `"${lastId}"`);
+        {!isOutputExpanded && (
+          <div className="flex-1 p-6 font-mono text-[13px] leading-relaxed flex flex-col min-h-0">
+            <div className="bg-card rounded-lg border border-border h-full flex flex-col overflow-hidden">
+              <div className="flex justify-between items-center px-4 py-3 border-b border-border bg-secondary/50">
+                <span className="text-muted-foreground text-[10px] uppercase tracking-tighter font-sans font-medium">Editor de Payload</span>
+                <div className="flex gap-2 items-center">
+                  {(presets?.length ?? 0) > 0 && (
+                    <select 
+                      className="text-[10px] font-sans bg-secondary border border-border text-foreground px-2 py-1 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary max-w-[150px] truncate"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const selected = presets?.find(p => p.name === e.target.value);
+                          if (selected) {
+                            let payloadStr = JSON.stringify(selected.payload, null, 2);
+                            if (payloadStr.includes('"LastIdPosition"')) {
+                              const lastId = typeof window !== 'undefined' ? window.localStorage.getItem('lastIdPosition') : null;
+                              if (lastId) {
+                                payloadStr = payloadStr.replace(/"LastIdPosition"/g, `"${lastId}"`);
+                              }
                             }
+                            setPayload(payloadStr);
                           }
-                          setPayload(payloadStr);
                         }
-                      }
-                    }}
+                      }}
+                    >
+                      <option value="">Carregar Preset...</option>
+                      {presets?.map(p => (
+                        <option key={p.name} value={p.name}>{p.name}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button 
+                    onClick={handleCopySnippet}
+                    className="text-[10px] font-sans bg-secondary hover:bg-secondary-foreground/10 text-foreground px-2 py-1 rounded transition-colors"
                   >
-                    <option value="">Carregar Preset...</option>
-                    {presets?.map(p => (
-                      <option key={p.name} value={p.name}>{p.name}</option>
-                    ))}
-                  </select>
-                )}
-                <button 
-                  onClick={handleCopySnippet}
-                  className="text-[10px] font-sans bg-secondary hover:bg-secondary-foreground/10 text-foreground px-2 py-1 rounded transition-colors"
-                >
-                  {snippetCopied ? 'Copiado!' : 'Copiar'}
-                </button>
+                    {snippetCopied ? 'Copiado!' : 'Copiar'}
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex-1 relative min-h-0">
-              {/* Show Code Snippet or JSON Editor based on tab? The mockup shows payload editor separate from snippets. Let's make the editor fixed for payload and show snippets if tab is changed. */}
-              {activeTab === 'json' || activeTab === 'python' || activeTab === 'csharp' ? (
-                 <Editor
-                  height="100%"
-                  language={activeTab === 'json' ? 'json' : activeTab} // JSON editor for payload, others for code
-                  theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
-                  value={activeTab === 'json' ? payload : generateCodeSnippet(activeTab)}
-                  onChange={activeTab === 'json' ? (val) => setPayload(val || '') : undefined}
-                  options={editorOptions}
-                />
-              ) : null}
-            </div>
+              
+              <div className="flex-1 relative min-h-0">
+                {/* Show Code Snippet or JSON Editor based on tab? The mockup shows payload editor separate from snippets. Let's make the editor fixed for payload and show snippets if tab is changed. */}
+                {activeTab === 'json' || activeTab === 'python' || activeTab === 'csharp' ? (
+                   <Editor
+                    height="100%"
+                    language={activeTab === 'json' ? 'json' : activeTab} // JSON editor for payload, others for code
+                    theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
+                    value={activeTab === 'json' ? payload : generateCodeSnippet(activeTab)}
+                    onChange={activeTab === 'json' ? (val) => setPayload(val || '') : undefined}
+                    options={editorOptions}
+                  />
+                ) : null}
+              </div>
 
-            {activeTab === 'json' && (
-              <div className="p-4 border-t border-border bg-card shrink-0">
-                <button
-                  onClick={handleExecute}
-                  disabled={isLoading || !token}
-                  className="w-full py-2.5 bg-primary text-primary-foreground rounded font-semibold text-sm hover:bg-sky-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                  {isLoading ? 'Executando...' : 'Executar Request'}
-                </button>
-              </div>
-            )}
+              {activeTab === 'json' && (
+                <div className="p-4 border-t border-border bg-card shrink-0">
+                  <button
+                    onClick={handleExecute}
+                    disabled={isLoading || !token}
+                    className="w-full py-2.5 bg-primary text-primary-foreground rounded font-semibold text-sm hover:bg-sky-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                    {isLoading ? 'Executando...' : 'Executar Request'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Output View */}
-        <div className="h-64 border-t border-border bg-card flex flex-col shrink-0">
+        <div className={`border-t border-border bg-card flex flex-col shrink-0 ${isOutputExpanded ? 'flex-1 h-full' : 'h-64'}`}>
           <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-secondary/30">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-sans font-medium">Response Body</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-sans font-medium">Response Body</span>
+              <button 
+                onClick={() => setIsOutputExpanded(!isOutputExpanded)}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-secondary"
+                title={isOutputExpanded ? "Recolher" : "Expandir"}
+              >
+                {isOutputExpanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+              </button>
+            </div>
             {status && (
                <div className="flex items-center gap-4 text-xs font-mono">
                  <span className={`flex items-center gap-1.5 ${status < 400 ? 'text-green-500' : 'text-red-500'}`}>
