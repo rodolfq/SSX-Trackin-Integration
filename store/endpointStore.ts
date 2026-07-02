@@ -145,7 +145,8 @@ export const useEndpointStore = create<EndpointStore>()(
         try {
           const { data, error } = await supabase
             .from('endpoints')
-            .select('*');
+            .select('*')
+            .order('created_at', { ascending: true });
           
           if (error) throw error;
           
