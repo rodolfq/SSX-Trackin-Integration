@@ -22,39 +22,80 @@ export default function ImportOpenAPI() {
     }
   };
 
-  // Helper to extract schema fields from OpenAPI schema definitions
-  const extractFields = (schemaObj: any, rootData: any): { fields: any[], isArray: boolean } => {
+  // Helper to recursively extract schema fields and generate dummy mock payload values from OpenAPI schemas
+  const resolveSchema = (schemaObj: any, rootData: any, prefix = ''): { fields: any[], dummyValue: any } => {
     let fields: any[] = [];
-    let properties = schemaObj?.properties;
-    let requiredList = schemaObj?.required || [];
-    
-    // Check if it's an array
-    let isArray = schemaObj?.type === 'array' || schemaObj?.schema?.type === 'array';
-    let targetObj = isArray ? (schemaObj.items || schemaObj.schema?.items) : schemaObj;
-    
-    // If it's a reference, try to resolve it from components or definitions
-    if (targetObj?.$ref) {
-      const refName = targetObj.$ref.split('/').pop();
-      if (rootData?.components?.schemas?.[refName]) {
-        properties = rootData.components.schemas[refName].properties;
-        requiredList = rootData.components.schemas[refName].required || [];
-      } else if (rootData?.definitions?.[refName]) {
-        properties = rootData.definitions[refName].properties;
-        requiredList = rootData.definitions[refName].required || [];
-      }
+    let dummyValue: any = null;
+
+    if (!schemaObj) return { fields, dummyValue };
+
+    let currentSchema = schemaObj;
+    if (schemaObj.$ref) {
+      const refName = schemaObj.$ref.split('/').pop();
+      currentSchema = rootData?.components?.schemas?.[refName] || rootData?.definitions?.[refName] || null;
+      if (!currentSchema) return { fields, dummyValue: {} };
     }
 
-    if (properties) {
-      for (const [key, value] of Object.entries(properties) as any) {
-        fields.push({
-          name: key,
-          type: value.type || 'string',
-          description: value.description || '',
-          required: requiredList.includes(key)
-        });
+    const type = currentSchema.type || 'object';
+
+    if (type === 'array') {
+      const itemsSchema = currentSchema.items;
+      const { fields: subFields, dummyValue: subDummy } = resolveSchema(itemsSchema, rootData, prefix);
+      fields = subFields;
+      dummyValue = Array.isArray(subDummy) ? subDummy : [subDummy];
+    } else if (type === 'object' || currentSchema.properties) {
+      const properties = currentSchema.properties || {};
+      const requiredList = currentSchema.required || [];
+      const obj: any = {};
+
+      for (const [key, propVal] of Object.entries(properties) as any) {
+        const fieldName = prefix ? `${prefix}.${key}` : key;
+        
+        let propSchema = propVal;
+        if (propVal.$ref) {
+          const refName = propVal.$ref.split('/').pop();
+          propSchema = rootData?.components?.schemas?.[refName] || rootData?.definitions?.[refName] || propVal;
+        }
+
+        const propType = propSchema.type || 'string';
+
+        if (propType === 'object' || propSchema.properties) {
+          const { fields: subFields, dummyValue: subDummy } = resolveSchema(propSchema, rootData, fieldName);
+          fields.push({
+            name: fieldName,
+            type: 'object',
+            description: propVal.description || '',
+            required: requiredList.includes(key)
+          });
+          fields.push(...subFields);
+          obj[key] = subDummy;
+        } else if (propType === 'array') {
+          const itemsSchema = propSchema.items;
+          const { fields: subFields, dummyValue: subDummy } = resolveSchema(itemsSchema, rootData, `${fieldName}[]`);
+          fields.push({
+            name: fieldName,
+            type: 'array',
+            description: propVal.description || '',
+            required: requiredList.includes(key)
+          });
+          fields.push(...subFields);
+          obj[key] = Array.isArray(subDummy) ? subDummy : [subDummy];
+        } else {
+          fields.push({
+            name: fieldName,
+            type: propType,
+            description: propVal.description || '',
+            required: requiredList.includes(key)
+          });
+          obj[key] = getDummyValue(propType, propVal.format);
+        }
       }
+      dummyValue = obj;
+    } else {
+      dummyValue = getDummyValue(type, currentSchema.format);
     }
-    return { fields, isArray };
+
+    return { fields, dummyValue };
   };
 
   const getDummyValue = (type: string) => {
@@ -166,15 +207,9 @@ export default function ImportOpenAPI() {
               schemaName = reqSchema.items.$ref.split('/').pop() + "[]";
             }
 
-            const { fields, isArray } = extractFields(reqSchema, openApiData);
+            const { fields, dummyValue } = resolveSchema(reqSchema, openApiData);
             schemaFields = fields;
-            
-            const dummyObj: any = {};
-            fields.forEach(f => {
-              dummyObj[f.name] = getDummyValue(f.type);
-            });
-            
-            defaultPayload = isArray ? [dummyObj] : dummyObj;
+            defaultPayload = dummyValue || {};
           }
 
           let responseSchemaFields: any[] = [];
@@ -189,11 +224,11 @@ export default function ImportOpenAPI() {
             } else if (resSchema.type === 'array' && resSchema.items?.$ref) {
               responseSchemaName = resSchema.items.$ref.split('/').pop() + "[]";
             }
-            const { fields } = extractFields(resSchema, openApiData);
+            const { fields } = resolveSchema(resSchema, openApiData);
             responseSchemaFields = fields;
           } else if (details.responses?.['200']?.schema) {
             // older swagger format
-            const { fields } = extractFields(details.responses['200'].schema, openApiData);
+            const { fields } = resolveSchema(details.responses['200'].schema, openApiData);
             responseSchemaFields = fields;
           }
 
