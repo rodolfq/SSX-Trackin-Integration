@@ -98,9 +98,10 @@ export default function ImportOpenAPI() {
     return { fields, dummyValue };
   };
 
-  const getDummyValue = (type: string) => {
+  const getDummyValue = (type: string, format?: string) => {
     if (type === 'number' || type === 'integer' || type === 'number($double)' || type === 'integer($int64)') return 0;
     if (type === 'boolean') return false;
+    if (format === 'date-time') return new Date().toISOString();
     return '';
   };
 
