@@ -32,6 +32,7 @@ export interface EndpointDef {
   schema?: EndpointSchema;
   responseSchema?: EndpointSchema;
   presets?: EndpointPreset[];
+  sortOrder?: number;
 }
 
 interface EndpointStore {
@@ -68,7 +69,8 @@ export const useEndpointStore = create<EndpointStore>()(
               default_payload: endpoint.defaultPayload,
               schema_fields: endpoint.schema,
               response_schema_fields: endpoint.responseSchema,
-              presets: endpoint.presets || []
+              presets: endpoint.presets || [],
+              sort_order: endpoint.sortOrder ?? 0
             });
         } catch (e) {
           console.error('Failed to save endpoint to Supabase:', e);
@@ -146,7 +148,7 @@ export const useEndpointStore = create<EndpointStore>()(
           const { data, error } = await supabase
             .from('endpoints')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('sort_order', { ascending: true });
           
           if (error) throw error;
           
@@ -162,7 +164,8 @@ export const useEndpointStore = create<EndpointStore>()(
               defaultPayload: row.default_payload || {},
               schema: row.schema_fields || { name: 'Payload', fields: [] },
               responseSchema: row.response_schema_fields || { name: 'Response', fields: [] },
-              presets: row.presets || []
+              presets: row.presets || [],
+              sortOrder: row.sort_order ?? 0
             }));
 
             set((state) => {

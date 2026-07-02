@@ -8,10 +8,11 @@ CREATE TABLE public.endpoints (
     category VARCHAR(100) NOT NULL,
     group_name VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
-    default_payload JSONB DEFAULT '{}'::jsonb,
-    schema_fields JSONB DEFAULT '{}'::jsonb,
-    response_schema_fields JSONB DEFAULT '{}'::jsonb,
-    presets JSONB DEFAULT '[]'::jsonb,
+    default_payload JSON DEFAULT '{}'::json,
+    schema_fields JSON DEFAULT '{}'::json,
+    response_schema_fields JSON DEFAULT '{}'::json,
+    presets JSON DEFAULT '[]'::json,
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

@@ -127,6 +127,7 @@ export default function ImportOpenAPI() {
 
       let count = 0;
       let skipped = 0;
+      let sortOrder = 0;
 
       for (const [path, methods] of Object.entries(openApiData.paths)) {
         for (const [method, rawDetails] of Object.entries(methods as any)) {
@@ -313,7 +314,8 @@ export default function ImportOpenAPI() {
             defaultPayload,
             schema: { name: schemaName, fields: schemaFields },
             responseSchema: { name: responseSchemaName, fields: responseSchemaFields },
-            presets
+            presets,
+            sortOrder: sortOrder++
           };
 
           addEndpoint(newEp);

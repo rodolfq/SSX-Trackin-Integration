@@ -18,6 +18,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'SSX Integration',
   description: 'SSX Tracking Integration Documentation',
+  icons: {
+    icon: '/ssx-favicon.ico',
+  }
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

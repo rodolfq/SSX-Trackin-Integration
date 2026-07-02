@@ -48,12 +48,18 @@ export function Sidebar() {
   const { endpoints } = useEndpointStore();
   const [isOpen, setIsOpen] = useState(false);
   
-  const [activeApi, setActiveApi] = useState(() => {
+  const [activeApi, setActiveApi] = useState('API Reference');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('ssx-active-api') || 'API Reference';
+      const stored = localStorage.getItem('ssx-active-api');
+      if (stored) {
+        setActiveApi(stored);
+      }
     }
-    return 'API Reference';
-  });
+  }, []);
 
   const apiSpaces = useMemo(() => {
     const spaces = new Set<string>(['API Reference']);
@@ -69,13 +75,14 @@ export function Sidebar() {
 
   // Reset to default API if the active API category was deleted
   useEffect(() => {
-    if (activeApi !== 'API Reference' && !apiSpaces.includes(activeApi)) {
+    if (!isMounted) return;
+    if (activeApi !== 'API Reference' && apiSpaces.length > 1 && !apiSpaces.includes(activeApi)) {
       setActiveApi('API Reference');
       if (typeof window !== 'undefined') {
         localStorage.setItem('ssx-active-api', 'API Reference');
       }
     }
-  }, [apiSpaces, activeApi]);
+  }, [apiSpaces, activeApi, isMounted]);
 
   const [navigation, setNavigation] = useState(staticNavigation);
 
