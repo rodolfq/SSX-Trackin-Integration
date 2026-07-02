@@ -24,6 +24,7 @@ export default function DynamicEndpointPage() {
   return (
     <div className="h-full">
       <EndpointView
+        category={endpoint.category}
         title={`${endpoint.group} - ${endpoint.name}`}
         method={endpoint.method as any}
         path={endpoint.path}

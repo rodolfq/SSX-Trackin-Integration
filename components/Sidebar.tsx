@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   BookOpen,
@@ -18,7 +18,6 @@ import {
   Star
 } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
-import { useEffect } from 'react';
 import { useEndpointStore } from '@/store/endpointStore';
 
 const staticNavigation = [
@@ -43,9 +42,41 @@ const staticNavigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [favorites, setFavorites] = useState<string[]>([]);
   const { endpoints } = useEndpointStore();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const [activeApi, setActiveApi] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ssx-active-api') || 'API Reference';
+    }
+    return 'API Reference';
+  });
+
+  const apiSpaces = useMemo(() => {
+    const spaces = new Set<string>(['API Reference']);
+    if (endpoints && endpoints.length > 0) {
+      endpoints.forEach(ep => {
+        if (ep.category) {
+          spaces.add(ep.category);
+        }
+      });
+    }
+    return Array.from(spaces);
+  }, [endpoints]);
+
+  // Reset to default API if the active API category was deleted
+  useEffect(() => {
+    if (activeApi !== 'API Reference' && !apiSpaces.includes(activeApi)) {
+      setActiveApi('API Reference');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ssx-active-api', 'API Reference');
+      }
+    }
+  }, [apiSpaces, activeApi]);
+
   const [navigation, setNavigation] = useState(staticNavigation);
 
   useEffect(() => {
@@ -58,7 +89,10 @@ export function Sidebar() {
         }))
       }));
       
-      endpoints.forEach(ep => {
+      // Filter endpoints to only display those belonging to the active API Space
+      const filteredEndpoints = endpoints.filter(ep => ep.category === activeApi);
+
+      filteredEndpoints.forEach(ep => {
         let catIndex = dynamicNav.findIndex((c: any) => c.category === ep.category);
         if (catIndex === -1) {
           dynamicNav.splice(dynamicNav.length - 1, 0, { category: ep.category, items: [] });
@@ -75,13 +109,11 @@ export function Sidebar() {
         groupItem.children.push({ name: ep.name, href: `/endpoints/dynamic/${ep.id}` });
       });
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNavigation(dynamicNav as any);
     } else {
-       
       setNavigation(staticNavigation);
     }
-  }, [endpoints]);
+  }, [endpoints, activeApi]);
 
   useEffect(() => {
     const stored = localStorage.getItem('ssx-favorites');
@@ -134,14 +166,94 @@ export function Sidebar() {
         <span className="text-foreground font-semibold tracking-tight">SSX Developer</span>
       </div>
       
-      <AppScrollbar className="flex-1 p-4 space-y-6">
-        {navigation.map((group: any) => (
-          <div key={group.category}>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 px-2 flex items-center gap-2">
-              {group.category}
-            </p>
+      {/* API Space Switcher Custom Dropdown */}
+      {apiSpaces.length > 1 && (
+        <div className="px-6 py-5 border-b border-border bg-secondary/10 shrink-0">
+          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2 px-1">
+            Espaço de API Ativo
+          </label>
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-full flex items-center justify-between text-xs bg-background border border-border text-foreground px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-medium cursor-pointer transition-all hover:bg-secondary/40 active:scale-[0.99]"
+            >
+              <span className="truncate">
+                {activeApi === 'API Reference' ? 'SSX Tracking (Padrão)' : activeApi}
+              </span>
+              <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 ml-2", isOpen && "transform rotate-180")} />
+            </button>
+
+            {/* Custom Dropdown Option List with Animation */}
+            {isOpen && (
+              <>
+                <style>{`
+                  @keyframes dropdownFadeIn {
+                    from {
+                      opacity: 0;
+                      transform: translateY(-4px) scale(0.98);
+                    }
+                    to {
+                      opacity: 1;
+                      transform: translateY(0) scale(1);
+                    }
+                  }
+                  .animate-dropdown {
+                    animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                  }
+                `}</style>
+                {/* Backdrop overlay to close when clicking outside */}
+                <div 
+                  className="fixed inset-0 z-40 cursor-default" 
+                  onClick={() => setIsOpen(false)}
+                />
+                
+                <ul className="absolute left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl py-1.5 z-50 overflow-hidden origin-top animate-dropdown">
+                  {apiSpaces.map((space) => {
+                    const isSelected = space === activeApi;
+                    return (
+                      <li key={space}>
+                        <button
+                          onClick={() => {
+                            setActiveApi(space);
+                            setIsOpen(false);
+                            if (typeof window !== 'undefined') {
+                              localStorage.setItem('ssx-active-api', space);
+                            }
+                            router.push('/');
+                          }}
+                          className={cn(
+                            "w-full text-left text-xs px-4 py-2.5 transition-colors cursor-pointer flex items-center justify-between",
+                            isSelected 
+                              ? "bg-primary/10 text-primary font-semibold" 
+                              : "text-foreground hover:bg-secondary/60"
+                          )}
+                        >
+                          <span className="truncate pr-2">
+                            {space === 'API Reference' ? 'SSX Tracking (Padrão)' : space}
+                          </span>
+                          {isSelected && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <AppScrollbar className="flex-1 px-6 py-5">
+        <div className="flex flex-col gap-8">
+          {navigation.map((group: any) => (
+            <div key={group.category}>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4 px-1 flex items-center gap-2">
+                {group.category}
+              </p>
             {group.category === 'API Reference' && favoriteItems.length > 0 && (
-              <div className="mb-3 space-y-1">
+              <div className="mb-4 space-y-2">
                 {favoriteItems.map((item: any) => (
                   <div key={`fav-${item.href}`}>
                     <Link
@@ -150,7 +262,7 @@ export function Sidebar() {
                         pathname === item.href
                           ? 'bg-secondary text-primary'
                           : 'text-muted-foreground hover:text-foreground',
-                        'group flex items-center justify-between px-2 py-1.5 rounded text-sm transition-colors cursor-pointer bg-secondary/20 border border-yellow-500/10'
+                        'group flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors cursor-pointer bg-secondary/20 border border-yellow-500/10'
                       )}
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
@@ -168,7 +280,7 @@ export function Sidebar() {
                 ))}
               </div>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {group.items.map((item: any) => {
                 const isExpanded = !!expandedItems[item.name];
                 return (
@@ -180,7 +292,7 @@ export function Sidebar() {
                           pathname === item.href
                             ? 'bg-secondary text-primary'
                             : 'text-muted-foreground hover:text-foreground',
-                          'group flex items-center justify-between px-2 py-1.5 rounded text-sm transition-colors cursor-pointer'
+                          'group flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors cursor-pointer'
                         )}
                       >
                         <div className="flex items-center gap-3">
@@ -197,7 +309,7 @@ export function Sidebar() {
                       <div className="mt-1">
                         <button
                           onClick={() => toggleExpand(item.name)}
-                          className="w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-secondary/50"
+                          className="w-full flex items-center justify-between px-2.5 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50"
                         >
                           <span className="flex items-center gap-2">
                             {item.icon && <item.icon className="w-4 h-4" />}
@@ -210,7 +322,7 @@ export function Sidebar() {
                           )}
                         </button>
                         {isExpanded && (
-                          <ul className="ml-4 border-l border-border mt-1 space-y-1">
+                          <ul className="ml-4 border-l border-border mt-1.5 space-y-1.5">
                             {item.children?.map((child: any, idx: number) => (
                               <li key={child.href || `${child.name}-${idx}`}>
                                 <Link
@@ -219,7 +331,7 @@ export function Sidebar() {
                                     pathname === child.href
                                       ? 'text-primary border-l-2 border-primary -ml-[1px]'
                                       : 'text-muted-foreground hover:text-foreground',
-                                    'group flex items-center justify-between pl-4 pr-2 py-1.5 text-sm transition-colors'
+                                    'group flex items-center justify-between pl-4 pr-2 py-2 text-sm transition-colors'
                                   )}
                                 >
                                   {child.name}
@@ -237,12 +349,13 @@ export function Sidebar() {
                 );
               })}
             </ul>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </AppScrollbar>
 
-      <div className="p-4 border-t border-border bg-background/50 shrink-0">
-        <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">Environment</div>
+      <div className="px-6 py-5 border-t border-border bg-background/50 shrink-0">
+        <div className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-widest">Environment</div>
         <div className="flex items-center justify-between text-xs font-mono">
           <span className="text-green-500 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500"></span> Production</span>
           <span className="text-muted-foreground">v3.4.0</span>

@@ -5,8 +5,9 @@ interface AuthState {
   token: string | null;
   username: string | null;
   createdAt: number | null;
-  setAuth: (token: string, username: string, createdAt?: number) => void;
-  logout: () => void;
+  tokens: Record<string, { token: string | null; username: string | null; createdAt: number | null }>;
+  setAuth: (token: string, username: string, createdAt?: number, category?: string) => void;
+  logout: (category?: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -15,11 +16,29 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       username: null,
       createdAt: null,
-      setAuth: (token, username, createdAt) => set({ token, username, createdAt: createdAt || Date.now() }),
-      logout: () => set({ token: null, username: null, createdAt: null }),
+      tokens: {},
+      setAuth: (token, username, createdAt, category = 'API Reference') => set((state) => ({
+        token: category === 'API Reference' ? token : state.token,
+        username: category === 'API Reference' ? username : state.username,
+        createdAt: category === 'API Reference' ? (createdAt || Date.now()) : state.createdAt,
+        tokens: {
+          ...state.tokens,
+          [category]: { token, username, createdAt: createdAt || Date.now() }
+        }
+      })),
+      logout: (category = 'API Reference') => set((state) => {
+        const nextTokens = { ...state.tokens };
+        delete nextTokens[category];
+        return {
+          token: category === 'API Reference' ? null : state.token,
+          username: category === 'API Reference' ? null : state.username,
+          createdAt: category === 'API Reference' ? null : state.createdAt,
+          tokens: nextTokens
+        };
+      }),
     }),
     {
-      name: 'ssx-auth-storage',
+      name: 'ssx-auth-storage-v2',
     }
   )
 );

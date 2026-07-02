@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useEndpointStore, EndpointDef } from '@/store/endpointStore';
-import { ArrowLeft, Upload, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Upload, CheckCircle, AlertTriangle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ImportOpenAPI() {
-  const { addEndpoint, endpoints } = useEndpointStore();
+  const { addEndpoint, endpoints, setEndpoints } = useEndpointStore();
   const [jsonInput, setJsonInput] = useState('');
+  const [categoryName, setCategoryName] = useState('');
   const [status, setStatus] = useState<{type: 'idle' | 'success' | 'error', message: string}>({type: 'idle', message: ''});
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +75,14 @@ export default function ImportOpenAPI() {
         throw new Error('Arquivo JSON inválido: não contém "paths". O formato deve ser OpenAPI/Swagger válido.');
       }
 
+      const category = categoryName.trim() || openApiData.info?.title || 'API Reference';
+      const categorySlug = category
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
       let count = 0;
       let skipped = 0;
 
@@ -84,11 +93,13 @@ export default function ImportOpenAPI() {
           const details = rawDetails as any;
 
           // Convert to our format
-          const id = path.replace(/^\//, '').toLowerCase().replace(/\//g, '-');
+          const rawId = path.replace(/^\//, '').toLowerCase().replace(/\//g, '-');
+          const id = category === 'API Reference' ? rawId : `${categorySlug}-${rawId}`;
           
-          if (path === '/Tracking/PositionHistory/List' || 
-              path === '/Tracking/PositionHistory/ListSoap' || 
-              path === '/v2/Tracking/PositionHistory/List') {
+          if (category === 'API Reference' && 
+              (path === '/Tracking/PositionHistory/List' || 
+               path === '/Tracking/PositionHistory/ListSoap' || 
+               path === '/v2/Tracking/PositionHistory/List')) {
               continue;
           }
 
@@ -105,7 +116,8 @@ export default function ImportOpenAPI() {
           if (generatedName[0] && generatedName[0].toLowerCase().startsWith('v') && !isNaN(Number(generatedName[0][1]))) {
               version = generatedName.shift() as string;
           }
-          if (generatedName[0] && generatedName[0].toLowerCase() === 'tracking') {
+          // Ignore the first segment if there are multiple segments, to avoid redundancy with the API name
+          if (generatedName.length > 1) {
               generatedName.shift();
           }
           let nameStr = generatedName.join(' ');
@@ -113,8 +125,8 @@ export default function ImportOpenAPI() {
           if (version) {
               nameStr += ` (${version})`;
           }
-          let name = id === 'v3-tracking-positionhistory-list' ? 'Position History (v3)' : nameStr;
-          if (id === 'login') name = 'Login';
+          let name = id.endsWith('v3-tracking-positionhistory-list') ? 'Position History (v3)' : nameStr;
+          if (id.endsWith('login')) name = 'Login';
           
           let defaultPayload: any = {};
           let schemaFields: any[] = [];
@@ -186,7 +198,7 @@ export default function ImportOpenAPI() {
           }
 
           let presets: any[] = [];
-          if (id === 'v3-tracking-positionhistory-list' || id === 'tracking-positionhistory-list') {
+          if (id.endsWith('v3-tracking-positionhistory-list') || id.endsWith('tracking-positionhistory-list')) {
              presets = [
               {
                 name: 'Posições de hoje',
@@ -256,7 +268,7 @@ export default function ImportOpenAPI() {
 
           const newEp: EndpointDef = {
             id,
-            category: 'API Reference',
+            category,
             group,
             name,
             method: method.toUpperCase() as any,
@@ -283,6 +295,12 @@ export default function ImportOpenAPI() {
     }
   };
 
+  const customCategories = Array.from(new Set(
+    endpoints
+      .filter(ep => ep.category !== 'API Reference')
+      .map(ep => ep.category)
+  ));
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-6">
@@ -301,6 +319,22 @@ export default function ImportOpenAPI() {
 
       <div className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-6">
         <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Nome da Categoria no Menu (Opcional)</label>
+            <input
+              type="text"
+              className="w-full p-2.5 bg-background border border-border rounded-md text-sm focus:ring-1 focus:ring-primary outline-none"
+              placeholder="Ex: Minha Nova API (Padrão: Título do arquivo OpenAPI)"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Os endpoints importados serão agrupados sob esta categoria no menu lateral.
+            </p>
+          </div>
+
+          <div className="h-px bg-border my-2"></div>
+
           <div>
             <label className="block text-sm font-medium mb-2">Opção 1: Upload de Arquivo (.json)</label>
             <label className="flex items-center justify-center w-full h-32 px-4 transition bg-secondary/20 border-2 border-secondary border-dashed rounded-md appearance-none cursor-pointer hover:border-primary/50 focus:outline-none">
@@ -345,6 +379,43 @@ export default function ImportOpenAPI() {
           </button>
         </div>
       </div>
+
+      {customCategories.length > 0 && (
+        <div className="mt-8 bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
+          <h2 className="text-xl font-semibold">Categorias Importadas</h2>
+          <p className="text-muted-foreground text-sm">
+            Gerencie as APIs que você importou para o sistema. Excluir uma categoria removerá todos os seus endpoints correspondentes do menu e do Playground.
+          </p>
+
+          <div className="divide-y divide-border">
+            {customCategories.map(cat => {
+              const catEndpoints = endpoints.filter(ep => ep.category === cat);
+              return (
+                <div key={cat} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-foreground">{cat}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {catEndpoints.length} {catEndpoints.length === 1 ? 'endpoint importado' : 'endpoints importados'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Tem certeza de que deseja excluir todos os ${catEndpoints.length} endpoints da categoria "${cat}"?`)) {
+                        const updated = endpoints.filter(ep => ep.category !== cat);
+                        setEndpoints(updated);
+                      }
+                    }}
+                    className="text-xs font-semibold bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Excluir
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
