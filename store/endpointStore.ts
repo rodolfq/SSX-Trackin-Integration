@@ -52,6 +52,7 @@ export const useEndpointStore = create<EndpointStore>()(
       endpoints: initialEndpoints as EndpointDef[],
       addEndpoint: async (endpoint) => {
         set((state) => ({ endpoints: [...state.endpoints, endpoint] }));
+        if (!supabase) return;
         try {
           await supabase
             .from('endpoints')
@@ -83,6 +84,7 @@ export const useEndpointStore = create<EndpointStore>()(
         set((state) => ({
           endpoints: state.endpoints.filter((ep) => ep.id !== id),
         }));
+        if (!supabase) return;
         try {
           await supabase
             .from('endpoints')
@@ -97,6 +99,7 @@ export const useEndpointStore = create<EndpointStore>()(
         set((state) => ({
           endpoints: state.endpoints.filter((ep) => ep.category !== category),
         }));
+        if (!supabase) return;
         try {
           await supabase
             .from('endpoints')
@@ -138,6 +141,7 @@ export const useEndpointStore = create<EndpointStore>()(
         return { endpoints: [...updatedEndpoints, ...missing] };
       }),
       fetchSupabaseEndpoints: async () => {
+        if (!supabase) return;
         try {
           const { data, error } = await supabase
             .from('endpoints')
