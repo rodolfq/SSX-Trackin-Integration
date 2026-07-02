@@ -6,7 +6,7 @@ import { ArrowLeft, Upload, CheckCircle, AlertTriangle, Trash2 } from 'lucide-re
 import Link from 'next/link';
 
 export default function ImportOpenAPI() {
-  const { addEndpoint, endpoints, setEndpoints } = useEndpointStore();
+  const { addEndpoint, endpoints, deleteCategory } = useEndpointStore();
   const [jsonInput, setJsonInput] = useState('');
   const [categoryName, setCategoryName] = useState('');
   const [status, setStatus] = useState<{type: 'idle' | 'success' | 'error', message: string}>({type: 'idle', message: ''});
@@ -399,10 +399,9 @@ export default function ImportOpenAPI() {
                     </p>
                   </div>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (confirm(`Tem certeza de que deseja excluir todos os ${catEndpoints.length} endpoints da categoria "${cat}"?`)) {
-                        const updated = endpoints.filter(ep => ep.category !== cat);
-                        setEndpoints(updated);
+                        await deleteCategory(cat);
                       }
                     }}
                     className="text-xs font-semibold bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
