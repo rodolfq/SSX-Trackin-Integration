@@ -214,7 +214,7 @@ export function Sidebar() {
                   onClick={() => setIsOpen(false)}
                 />
                 
-                <ul className="absolute left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl py-1.5 z-50 overflow-hidden origin-top animate-dropdown">
+                <ul className="absolute left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl py-0 z-50 overflow-hidden origin-top animate-dropdown">
                   {apiSpaces.map((space) => {
                     const isSelected = space === activeApi;
                     return (
