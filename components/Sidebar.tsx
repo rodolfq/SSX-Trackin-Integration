@@ -354,11 +354,25 @@ export function Sidebar() {
         </div>
       </AppScrollbar>
 
-      <div className="px-6 py-5 border-t border-border bg-background/50 shrink-0">
-        <div className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-widest">Environment</div>
-        <div className="flex items-center justify-between text-xs font-mono">
-          <span className="text-green-500 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500"></span> Production</span>
-          <span className="text-muted-foreground">v3.4.0</span>
+      <div className="px-6 py-5 border-t border-border bg-background/50 shrink-0 space-y-3">
+        <div>
+          <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">Base API URL</div>
+          <a
+            href="https://integration.systemsatx.com.br"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-mono text-primary hover:underline truncate block"
+            title="https://integration.systemsatx.com.br"
+          >
+            integration.systemsatx.com.br
+          </a>
+        </div>
+        <div className="pt-2 border-t border-border/50">
+          <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">Environment</div>
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-green-500 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500"></span> Production</span>
+            <span className="text-muted-foreground">v3.4.0</span>
+          </div>
         </div>
       </div>
     </aside>

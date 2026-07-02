@@ -51,10 +51,14 @@ export function EndpointView({
   schema,
   responseSchema
 }: EndpointViewProps) {
-  const { tokens, token: defaultToken, setAuth } = useAuthStore();
+  const { tokens, token: defaultToken, username: defaultUsername, setAuth } = useAuthStore();
   const apiCategory = category || 'API Reference';
-  const token = tokens?.[apiCategory]?.token ?? defaultToken;
+  const currentAuth = tokens?.[apiCategory];
+  const token = currentAuth?.token ?? defaultToken;
+  const username = currentAuth?.username ?? (apiCategory === 'API Reference' ? defaultUsername : '');
   const { resolvedTheme } = useTheme();
+  const [isEditingToken, setIsEditingToken] = useState(false);
+  const [manualToken, setManualToken] = useState('');
   const [payload, setPayload] = useState(JSON.stringify(defaultPayload, null, 2));
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
@@ -265,7 +269,9 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
             <span className={`px-2 py-1 text-xs font-bold rounded border ${methodColor}`}>
               {method}
             </span>
-            <span className="font-mono text-muted-foreground text-sm">{path}</span>
+            <span className="font-mono text-muted-foreground text-sm">
+              <span className="text-muted-foreground/45">https://integration.systemsatx.com.br</span>{path}
+            </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-4">{title}</h1>
           <p className="text-muted-foreground leading-relaxed mb-8">{description}</p>
@@ -379,11 +385,94 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
       <div className="w-full lg:w-[450px] xl:w-[500px] 2xl:w-[600px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-secondary/20 flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
         {/* Auth Status Banner */}
         {!token ? (
-          <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex items-center gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
-            <Lock className="h-4 w-4 shrink-0" />
-            <span>Autenticação necessária. <a href="/auth" className="underline font-medium hover:text-yellow-400">Gere um token</a> para testar.</span>
+           <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
+             <div className="flex items-center gap-3">
+               <Lock className="h-4 w-4 shrink-0" />
+               <span>
+                 Autenticação necessária. <a href="/auth" className="underline font-medium hover:text-yellow-400">Gere um token</a> ou insira um existente:
+               </span>
+             </div>
+             <div className="flex items-center gap-2 w-full sm:w-auto">
+               <input
+                 type="text"
+                 placeholder="Cole seu token JWT..."
+                 value={manualToken}
+                 onChange={(e) => setManualToken(e.target.value)}
+                 className="flex-1 sm:w-48 text-xs bg-background border border-yellow-500/30 text-foreground px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 placeholder:text-muted-foreground/50 font-sans"
+               />
+               <button
+                 onClick={() => {
+                   if (manualToken.trim()) {
+                     setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
+                     setManualToken('');
+                   }
+                 }}
+                 className="bg-yellow-500 text-black dark:text-yellow-950 font-semibold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400 transition-colors cursor-pointer"
+               >
+                 Salvar
+               </button>
+             </div>
+           </div>
+        ) : (
+          <div className="bg-green-500/10 border-b border-green-500/20 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-green-600 dark:text-green-400 text-xs shrink-0">
+            <div className="flex items-center gap-2">
+              <Unlock className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                Autenticado {username ? `como ${username}` : ''}
+              </span>
+            </div>
+            {isEditingToken ? (
+              <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                <input
+                  type="text"
+                  placeholder="Novo token JWT..."
+                  value={manualToken}
+                  onChange={(e) => setManualToken(e.target.value)}
+                  className="flex-1 sm:w-48 text-[11px] bg-background border border-green-500/30 text-foreground px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder:text-muted-foreground/50 font-sans"
+                />
+                <button
+                  onClick={() => {
+                    if (manualToken.trim()) {
+                      setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
+                      setManualToken('');
+                    }
+                    setIsEditingToken(false);
+                  }}
+                  className="bg-green-500 text-white dark:text-green-950 font-semibold px-2 py-1 rounded text-[11px] hover:bg-green-400 transition-colors cursor-pointer"
+                >
+                  Salvar
+                </button>
+                <button
+                  onClick={() => {
+                    setManualToken('');
+                    setIsEditingToken(false);
+                  }}
+                  className="text-muted-foreground hover:text-foreground text-[11px] px-1 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsEditingToken(true)}
+                  className="underline hover:text-green-500 transition-colors cursor-pointer"
+                >
+                  Alterar Token
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  onClick={() => {
+                    useAuthStore.getState().logout(apiCategory);
+                  }}
+                  className="underline hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  Desconectar
+                </button>
+              </div>
+            )}
           </div>
-        ) : null}
+        )}
 
         {/* Tabs */}
         <div className="flex border-b border-border px-2 shrink-0">
