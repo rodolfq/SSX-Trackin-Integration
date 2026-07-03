@@ -234,6 +234,75 @@ export default function ImportOpenAPI() {
             responseSchemaFields = fields;
           }
 
+          let parsedResponses: any[] = [];
+          if (details.responses) {
+            for (const [code, resVal] of Object.entries(details.responses)) {
+              const resObj = resVal as any;
+              let resSchemaObj = resObj.content?.['application/json']?.schema ||
+                                 resObj.content?.['text/json']?.schema ||
+                                 resObj.schema;
+              
+              let responseFields: any[] = [];
+              let responseDummyValue: any = null;
+              let currentResponseSchemaName = `Response${code}`;
+              
+              if (resSchemaObj) {
+                if (resSchemaObj.$ref) {
+                  currentResponseSchemaName = resSchemaObj.$ref.split('/').pop();
+                } else if (resSchemaObj.type === 'array' && resSchemaObj.items?.$ref) {
+                  currentResponseSchemaName = resSchemaObj.items.$ref.split('/').pop() + "[]";
+                }
+                const { fields, dummyValue } = resolveSchema(resSchemaObj, openApiData);
+                responseFields = fields;
+                responseDummyValue = dummyValue;
+              }
+              
+              parsedResponses.push({
+                code,
+                description: resObj.description || '',
+                schema: responseFields.length > 0 ? {
+                  name: currentResponseSchemaName,
+                  fields: responseFields
+                } : undefined,
+                example: responseDummyValue
+              });
+            }
+          }
+
+          // Inject fallback response for Actuator List if 200 example is empty or it is the specific path
+          if (path === '/Tracking/Actuator/List' || path.toLowerCase() === '/tracking/actuator/list') {
+            const index200 = parsedResponses.findIndex(r => r.code === '200');
+            const fallbackExample = [
+              {
+                "IdActuator": 0,
+                "Name": "string"
+              }
+            ];
+            if (index200 !== -1) {
+              parsedResponses[index200].example = fallbackExample;
+              parsedResponses[index200].schema = {
+                name: 'ActuatorResult[]',
+                fields: [
+                  { name: 'IdActuator', type: 'integer', description: 'ID do atuador', required: true },
+                  { name: 'Name', type: 'string', description: 'Nome do atuador', required: true }
+                ]
+              };
+            } else {
+              parsedResponses.push({
+                code: '200',
+                description: 'Sucesso.',
+                schema: {
+                  name: 'ActuatorResult[]',
+                  fields: [
+                    { name: 'IdActuator', type: 'integer', description: 'ID do atuador', required: true },
+                    { name: 'Name', type: 'string', description: 'Nome do atuador', required: true }
+                  ]
+                },
+                example: fallbackExample
+              });
+            }
+          }
+
           let presets: any[] = [];
           if (id.endsWith('v3-tracking-positionhistory-list') || id.endsWith('tracking-positionhistory-list')) {
              presets = [
@@ -314,6 +383,7 @@ export default function ImportOpenAPI() {
             defaultPayload,
             schema: { name: schemaName, fields: schemaFields },
             responseSchema: { name: responseSchemaName, fields: responseSchemaFields },
+            responses: parsedResponses,
             presets,
             sortOrder: sortOrder++
           };

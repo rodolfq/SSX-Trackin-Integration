@@ -23,6 +23,20 @@ export function Header() {
           />
         </div>
       </div>
+
+      <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 bg-secondary/30 border border-border rounded-full text-xs transition-all duration-200 hover:bg-secondary/50 hover:border-border/80 select-none shrink-0">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Base API URL</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+        <a 
+          href="https://integration.systemsatx.com.br" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="font-mono text-primary font-medium hover:underline"
+        >
+          https://integration.systemsatx.com.br
+        </a>
+      </div>
+
       <div className="flex items-center gap-6">
         {token && (
           <div className="flex items-center gap-4 border-r border-border pr-6">

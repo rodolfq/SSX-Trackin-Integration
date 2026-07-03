@@ -34,6 +34,7 @@ export default function DynamicEndpointPage() {
         defaultPayload={endpoint.defaultPayload}
         schema={endpoint.schema as any}
         presets={endpoint.presets as any}
+        responses={endpoint.responses as any}
       />
     </div>
   );

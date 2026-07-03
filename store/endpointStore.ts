@@ -20,6 +20,13 @@ export interface EndpointPreset {
   payload: any;
 }
 
+export interface ResponseDef {
+  code: string;
+  description: string;
+  schema?: EndpointSchema;
+  example?: any;
+}
+
 export interface EndpointDef {
   id: string; // unique slug like 'tracking/message/list'
   category: string; // e.g. 'Tracking'
@@ -31,6 +38,7 @@ export interface EndpointDef {
   defaultPayload: any;
   schema?: EndpointSchema;
   responseSchema?: EndpointSchema;
+  responses?: ResponseDef[];
   presets?: EndpointPreset[];
   sortOrder?: number;
 }
@@ -68,7 +76,9 @@ export const useEndpointStore = create<EndpointStore>()(
               name: endpoint.name,
               default_payload: endpoint.defaultPayload,
               schema_fields: endpoint.schema,
-              response_schema_fields: endpoint.responseSchema,
+              response_schema_fields: endpoint.responses
+                ? { ...endpoint.responseSchema, responses: endpoint.responses }
+                : endpoint.responseSchema,
               presets: endpoint.presets || [],
               sort_order: endpoint.sortOrder ?? 0
             });
@@ -119,7 +129,7 @@ export const useEndpointStore = create<EndpointStore>()(
         const filteredStateEndpoints = state.endpoints.filter(ep => 
           ep.category !== 'API Reference' || initialMap.has(ep.id)
         );
-
+ 
         const updatedEndpoints = filteredStateEndpoints.map(ep => {
           if (initialMap.has(ep.id)) {
             const initial = initialMap.get(ep.id)!;
@@ -127,6 +137,7 @@ export const useEndpointStore = create<EndpointStore>()(
               ...ep,
               schema: initial.schema,
               responseSchema: initial.responseSchema,
+              responses: initial.responses,
               defaultPayload: initial.defaultPayload,
               description: initial.description,
               name: initial.name,
@@ -136,7 +147,7 @@ export const useEndpointStore = create<EndpointStore>()(
           }
           return ep;
         });
-
+ 
         const existingIds = new Set(filteredStateEndpoints.map(ep => ep.id));
         const missing = (initialEndpoints as EndpointDef[]).filter(ep => !existingIds.has(ep.id));
         
@@ -164,6 +175,7 @@ export const useEndpointStore = create<EndpointStore>()(
               defaultPayload: row.default_payload || {},
               schema: row.schema_fields || { name: 'Payload', fields: [] },
               responseSchema: row.response_schema_fields || { name: 'Response', fields: [] },
+              responses: row.response_schema_fields?.responses || [],
               presets: row.presets || [],
               sortOrder: row.sort_order ?? 0
             }));

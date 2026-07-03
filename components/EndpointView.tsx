@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { ResponseDef } from '@/store/endpointStore';
 import { Editor } from '@monaco-editor/react';
 import { Play, Loader2, Lock, Unlock, Clock, AlertCircle, Maximize2, Minimize2, Download } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
@@ -37,6 +38,7 @@ interface EndpointViewProps {
   presets?: { name: string; payload: any }[];
   schema?: EndpointSchema;
   responseSchema?: EndpointSchema;
+  responses?: ResponseDef[];
 }
 
 export function EndpointView({
@@ -49,7 +51,8 @@ export function EndpointView({
   defaultPayload = {},
   presets = [],
   schema,
-  responseSchema
+  responseSchema,
+  responses = []
 }: EndpointViewProps) {
   const { tokens, token: defaultToken, username: defaultUsername, setAuth } = useAuthStore();
   const apiCategory = category || 'API Reference';
@@ -65,6 +68,28 @@ export function EndpointView({
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [status, setStatus] = useState<number | null>(null);
   const [isOutputExpanded, setIsOutputExpanded] = useState(false);
+
+  const isLoginMethod = useMemo(() => {
+    const lowercasePath = path.toLowerCase();
+    const lowercaseTitle = title.toLowerCase();
+    return lowercasePath.endsWith('/login') || 
+           lowercasePath === 'login' || 
+           lowercasePath.includes('/login/') ||
+           lowercaseTitle.includes('login');
+  }, [path, title]);
+
+  const [selectedResponseCode, setSelectedResponseCode] = useState<string>('200');
+  const [responseSchemaTab, setResponseSchemaTab] = useState<'example' | 'schema'>('example');
+
+  useEffect(() => {
+    if (responses && responses.length > 0) {
+      const has200 = responses.some(r => r.code === '200');
+      setSelectedResponseCode(has200 ? '200' : responses[0].code);
+    } else {
+      setSelectedResponseCode('200');
+    }
+    setResponseSchemaTab('example');
+  }, [path, responses]);
 
   const handleExecute = async () => {
     setIsLoading(true);
@@ -351,31 +376,135 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
             </div>
           )}
 
-          {responseSchema && (
-            <div className="space-y-4 mt-8">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">Response Body</h3>
-              <div className="bg-card rounded-lg border border-border p-5 text-sm overflow-auto">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-foreground font-semibold font-sans mb-4">
-                    {responseSchema.name} <span className="text-muted-foreground font-mono font-normal">{'{'}</span>
+          {((responses && responses.length > 0) || responseSchema) && (
+            <div className="space-y-4 mt-8 border-t border-border/60 pt-8">
+              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">Responses</h3>
+
+              {responses && responses.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Status Code Buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    {responses.map((res) => {
+                      const isSelected = res.code === selectedResponseCode;
+                      const codeNum = parseInt(res.code, 10);
+                      const is2xx = codeNum >= 200 && codeNum < 300;
+                      const is4xx = codeNum >= 400 && codeNum < 500;
+                      
+                      const codeBadgeColor = is2xx 
+                        ? (isSelected ? 'bg-green-500 text-black font-semibold' : 'text-green-500 bg-green-500/10 border-green-500/20 hover:bg-green-500/20')
+                        : is4xx 
+                          ? (isSelected ? 'bg-amber-500 text-black font-semibold' : 'text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20')
+                          : (isSelected ? 'bg-red-500 text-white font-semibold' : 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20');
+
+                      return (
+                        <button
+                          key={res.code}
+                          onClick={() => setSelectedResponseCode(res.code)}
+                          className={`px-3 py-1 text-xs rounded border cursor-pointer transition-all ${codeBadgeColor}`}
+                        >
+                          {res.code}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="pl-4 space-y-4">
-                    {responseSchema.fields?.map(field => (
-                      <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-4 border-b border-border/50 last:border-0 last:pb-0">
-                        <div className="w-full sm:w-1/3 sm:max-w-[250px] shrink-0 flex items-start gap-1 pt-1">
-                          <span className="font-mono text-foreground break-all">{field.name}</span>
-                          {field.required && <span className="text-red-500 font-bold">*</span>}
-                        </div>
-                        <div className="flex flex-col flex-1">
-                          <span className="font-mono text-blue-400 mb-2 text-[13px]">{field.type}</span>
-                          <span className="font-sans text-muted-foreground leading-relaxed whitespace-pre-wrap">{field.description}</span>
-                        </div>
+
+                  {/* Selected Response Info */}
+                  {responses.map((res) => {
+                    if (res.code !== selectedResponseCode) return null;
+                    return (
+                      <div key={res.code} className="space-y-4">
+                        {res.description && (
+                          <p className="text-sm text-muted-foreground italic">
+                            {res.description}
+                          </p>
+                        )}
+
+                        {res.schema || res.example ? (
+                          <div className="space-y-3">
+                            <div className="flex gap-6 border-b border-border">
+                              {res.example && (
+                                <button
+                                  onClick={() => setResponseSchemaTab('example')}
+                                  className={`pb-2 text-sm font-medium transition-colors border-b-2 -mb-[1px] ${responseSchemaTab === 'example' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                >
+                                  Example Value
+                                </button>
+                              )}
+                              {res.schema && (
+                                <button
+                                  onClick={() => setResponseSchemaTab('schema')}
+                                  className={`pb-2 text-sm font-medium transition-colors border-b-2 -mb-[1px] ${responseSchemaTab === 'schema' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                                >
+                                  Schema
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="bg-card rounded-lg border border-border p-5 text-sm overflow-auto max-h-[300px]">
+                              {responseSchemaTab === 'example' && res.example ? (
+                                <pre className="font-mono text-muted-foreground">{JSON.stringify(res.example, null, 2)}</pre>
+                              ) : (
+                                res.schema && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-foreground font-semibold font-sans mb-4">
+                                      {res.schema.name} <span className="text-muted-foreground font-mono font-normal">{'{'}</span>
+                                    </div>
+                                    <div className="pl-4 space-y-4">
+                                      {res.schema.fields?.map(field => (
+                                        <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                                          <div className="w-full sm:w-1/3 sm:max-w-[250px] shrink-0 flex items-start gap-1 pt-1">
+                                            <span className="font-mono text-foreground break-all">{field.name}</span>
+                                            {field.required && <span className="text-red-500 font-bold">*</span>}
+                                          </div>
+                                          <div className="flex flex-col flex-1">
+                                            <span className="font-mono text-blue-400 mb-2 text-[13px]">{field.type}</span>
+                                            <span className="font-sans text-muted-foreground leading-relaxed whitespace-pre-wrap">{field.description}</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div className="text-muted-foreground font-mono mt-2">{'}'}</div>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic p-3 bg-card border border-border rounded-lg">
+                            Nenhum payload ou esquema de retorno definido para este código.
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                  <div className="text-muted-foreground font-mono mt-2">{'}'}</div>
+                    );
+                  })}
                 </div>
-              </div>
+              ) : (
+                /* Fallback to legacy single responseSchema (200) */
+                responseSchema && (
+                  <div className="bg-card rounded-lg border border-border p-5 text-sm overflow-auto">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-foreground font-semibold font-sans mb-4">
+                        {responseSchema.name} <span className="text-muted-foreground font-mono font-normal">{'{'}</span>
+                      </div>
+                      <div className="pl-4 space-y-4">
+                        {responseSchema.fields?.map(field => (
+                          <div key={field.name} className="flex flex-col sm:flex-row sm:gap-8 pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                            <div className="w-full sm:w-1/3 sm:max-w-[250px] shrink-0 flex items-start gap-1 pt-1">
+                              <span className="font-mono text-foreground break-all">{field.name}</span>
+                              {field.required && <span className="text-red-500 font-bold">*</span>}
+                            </div>
+                            <div className="flex flex-col flex-1">
+                              <span className="font-mono text-blue-400 mb-2 text-[13px]">{field.type}</span>
+                              <span className="font-sans text-muted-foreground leading-relaxed whitespace-pre-wrap">{field.description}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-muted-foreground font-mono mt-2">{'}'}</div>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           )}
         </div>
@@ -384,94 +513,96 @@ Console.WriteLine(await response.Content.ReadAsStringAsync());`;
       {/* Playground Column */}
       <div className="w-full lg:w-[450px] xl:w-[500px] 2xl:w-[600px] shrink-0 lg:shrink-0 flex-1 lg:flex-none min-h-[400px] lg:min-h-0 bg-secondary/20 flex flex-col h-auto lg:h-full border-t lg:border-t-0 border-border">
         {/* Auth Status Banner */}
-        {!token ? (
-           <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
-             <div className="flex items-center gap-3">
-               <Lock className="h-4 w-4 shrink-0" />
-               <span>
-                 Autenticação necessária. <a href="/auth" className="underline font-medium hover:text-yellow-400">Gere um token</a> ou insira um existente:
-               </span>
+        {!isLoginMethod && (
+          !token ? (
+             <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-yellow-600 dark:text-yellow-500 text-sm shrink-0">
+               <div className="flex items-center gap-3">
+                 <Lock className="h-4 w-4 shrink-0" />
+                 <span>
+                   Autenticação necessária. <a href="/auth" className="underline font-medium hover:text-yellow-400">Gere um token</a> ou insira um existente:
+                 </span>
+               </div>
+               <div className="flex items-center gap-2 w-full sm:w-auto">
+                 <input
+                   type="text"
+                   placeholder="Cole seu token JWT..."
+                   value={manualToken}
+                   onChange={(e) => setManualToken(e.target.value)}
+                   className="flex-1 sm:w-48 text-xs bg-background border border-yellow-500/30 text-foreground px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 placeholder:text-muted-foreground/50 font-sans"
+                 />
+                 <button
+                   onClick={() => {
+                     if (manualToken.trim()) {
+                       setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
+                       setManualToken('');
+                     }
+                   }}
+                   className="bg-yellow-500 text-black dark:text-yellow-950 font-semibold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400 transition-colors cursor-pointer"
+                 >
+                   Salvar
+                 </button>
+               </div>
              </div>
-             <div className="flex items-center gap-2 w-full sm:w-auto">
-               <input
-                 type="text"
-                 placeholder="Cole seu token JWT..."
-                 value={manualToken}
-                 onChange={(e) => setManualToken(e.target.value)}
-                 className="flex-1 sm:w-48 text-xs bg-background border border-yellow-500/30 text-foreground px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-yellow-500 placeholder:text-muted-foreground/50 font-sans"
-               />
-               <button
-                 onClick={() => {
-                   if (manualToken.trim()) {
-                     setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
-                     setManualToken('');
-                   }
-                 }}
-                 className="bg-yellow-500 text-black dark:text-yellow-950 font-semibold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400 transition-colors cursor-pointer"
-               >
-                 Salvar
-               </button>
-             </div>
-           </div>
-        ) : (
-          <div className="bg-green-500/10 border-b border-green-500/20 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-green-600 dark:text-green-400 text-xs shrink-0">
-            <div className="flex items-center gap-2">
-              <Unlock className="h-3.5 w-3.5 shrink-0" />
-              <span>
-                Autenticado {username ? `como ${username}` : ''}
-              </span>
-            </div>
-            {isEditingToken ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
-                <input
-                  type="text"
-                  placeholder="Novo token JWT..."
-                  value={manualToken}
-                  onChange={(e) => setManualToken(e.target.value)}
-                  className="flex-1 sm:w-48 text-[11px] bg-background border border-green-500/30 text-foreground px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder:text-muted-foreground/50 font-sans"
-                />
-                <button
-                  onClick={() => {
-                    if (manualToken.trim()) {
-                      setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
+          ) : (
+            <div className="bg-green-500/10 border-b border-green-500/20 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-green-600 dark:text-green-400 text-xs shrink-0">
+              <div className="flex items-center gap-2">
+                <Unlock className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  Autenticado {username ? `como ${username}` : ''}
+                </span>
+              </div>
+              {isEditingToken ? (
+                <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                  <input
+                    type="text"
+                    placeholder="Novo token JWT..."
+                    value={manualToken}
+                    onChange={(e) => setManualToken(e.target.value)}
+                    className="flex-1 sm:w-48 text-[11px] bg-background border border-green-500/30 text-foreground px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500 placeholder:text-muted-foreground/50 font-sans"
+                  />
+                  <button
+                    onClick={() => {
+                      if (manualToken.trim()) {
+                        setAuth(manualToken.trim(), 'Manual Token', Date.now(), apiCategory);
+                        setManualToken('');
+                      }
+                      setIsEditingToken(false);
+                    }}
+                    className="bg-green-500 text-white dark:text-green-950 font-semibold px-2 py-1 rounded text-[11px] hover:bg-green-400 transition-colors cursor-pointer"
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    onClick={() => {
                       setManualToken('');
-                    }
-                    setIsEditingToken(false);
-                  }}
-                  className="bg-green-500 text-white dark:text-green-950 font-semibold px-2 py-1 rounded text-[11px] hover:bg-green-400 transition-colors cursor-pointer"
-                >
-                  Salvar
-                </button>
-                <button
-                  onClick={() => {
-                    setManualToken('');
-                    setIsEditingToken(false);
-                  }}
-                  className="text-muted-foreground hover:text-foreground text-[11px] px-1 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setIsEditingToken(true)}
-                  className="underline hover:text-green-500 transition-colors cursor-pointer"
-                >
-                  Alterar Token
-                </button>
-                <span className="text-border">|</span>
-                <button
-                  onClick={() => {
-                    useAuthStore.getState().logout(apiCategory);
-                  }}
-                  className="underline hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  Desconectar
-                </button>
-              </div>
-            )}
-          </div>
+                      setIsEditingToken(false);
+                    }}
+                    className="text-muted-foreground hover:text-foreground text-[11px] px-1 cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setIsEditingToken(true)}
+                    className="underline hover:text-green-500 transition-colors cursor-pointer"
+                  >
+                    Alterar Token
+                  </button>
+                  <span className="text-border">|</span>
+                  <button
+                    onClick={() => {
+                      useAuthStore.getState().logout(apiCategory);
+                    }}
+                    className="underline hover:text-red-500 transition-colors cursor-pointer"
+                  >
+                    Desconectar
+                  </button>
+                </div>
+              )}
+            </div>
+          )
         )}
 
         {/* Tabs */}
