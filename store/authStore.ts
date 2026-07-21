@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { DEFAULT_API_SPACE } from '@/lib/constants';
 
 interface AuthState {
   token: string | null;
@@ -17,22 +18,22 @@ export const useAuthStore = create<AuthState>()(
       username: null,
       createdAt: null,
       tokens: {},
-      setAuth: (token, username, createdAt, category = 'API Reference') => set((state) => ({
-        token: category === 'API Reference' ? token : state.token,
-        username: category === 'API Reference' ? username : state.username,
-        createdAt: category === 'API Reference' ? (createdAt || Date.now()) : state.createdAt,
+      setAuth: (token, username, createdAt, category = DEFAULT_API_SPACE) => set((state) => ({
+        token: category === DEFAULT_API_SPACE ? token : state.token,
+        username: category === DEFAULT_API_SPACE ? username : state.username,
+        createdAt: category === DEFAULT_API_SPACE ? (createdAt || Date.now()) : state.createdAt,
         tokens: {
           ...state.tokens,
           [category]: { token, username, createdAt: createdAt || Date.now() }
         }
       })),
-      logout: (category = 'API Reference') => set((state) => {
+      logout: (category = DEFAULT_API_SPACE) => set((state) => {
         const nextTokens = { ...state.tokens };
         delete nextTokens[category];
         return {
-          token: category === 'API Reference' ? null : state.token,
-          username: category === 'API Reference' ? null : state.username,
-          createdAt: category === 'API Reference' ? null : state.createdAt,
+          token: category === DEFAULT_API_SPACE ? null : state.token,
+          username: category === DEFAULT_API_SPACE ? null : state.username,
+          createdAt: category === DEFAULT_API_SPACE ? null : state.createdAt,
           tokens: nextTokens
         };
       }),

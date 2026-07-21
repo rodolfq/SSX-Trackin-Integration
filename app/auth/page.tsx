@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useEndpointStore } from '@/store/endpointStore';
+import { DEFAULT_API_SPACE } from '@/lib/constants';
 import { Key, Copy, CheckCircle2, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
 import { Editor } from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
@@ -20,14 +21,14 @@ export default function AuthPage() {
   const [response, setResponse] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
-  const [manualCategory, setManualCategory] = useState('API Reference');
+  const [manualCategory, setManualCategory] = useState(DEFAULT_API_SPACE);
   const [manualTokenInput, setManualTokenInput] = useState('');
   const [manualSuccessMsg, setManualSuccessMsg] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const importedCategories = useMemo(() => {
     const cats = new Set(endpoints.map(e => e.category));
-    cats.delete('API Reference');
+    cats.delete(DEFAULT_API_SPACE);
     return Array.from(cats);
   }, [endpoints]);
 
@@ -35,7 +36,7 @@ export default function AuthPage() {
     if (manualTokenInput.trim()) {
       setAuth(manualTokenInput.trim(), 'Manual Token', Date.now(), manualCategory);
       setManualTokenInput('');
-      setManualSuccessMsg(`Token salvo com sucesso para "${manualCategory === 'API Reference' ? 'SSX Tracking (Padrão)' : manualCategory}"!`);
+      setManualSuccessMsg(`Token salvo com sucesso para "${manualCategory}"!`);
       setTimeout(() => setManualSuccessMsg(''), 4000);
     }
   };
@@ -200,7 +201,7 @@ export default function AuthPage() {
                     className="w-full flex items-center justify-between text-xs bg-background border border-border text-foreground px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-medium cursor-pointer transition-all hover:bg-secondary/40 active:scale-[0.99]"
                   >
                     <span className="truncate">
-                      {manualCategory === 'API Reference' ? 'SSX Tracking (Padrão)' : manualCategory}
+                      {manualCategory}
                     </span>
                     <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 ml-2", isDropdownOpen && "transform rotate-180")} />
                   </button>
@@ -233,18 +234,18 @@ export default function AuthPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setManualCategory('API Reference');
+                              setManualCategory(DEFAULT_API_SPACE);
                               setIsDropdownOpen(false);
                             }}
                             className={cn(
                               "w-full text-left text-xs px-4 py-2.5 transition-colors cursor-pointer flex items-center justify-between",
-                              manualCategory === 'API Reference' 
-                                ? "bg-primary/10 text-primary font-semibold" 
+                              manualCategory === DEFAULT_API_SPACE
+                                ? "bg-primary/10 text-primary font-semibold"
                                 : "text-foreground hover:bg-secondary/60"
                             )}
                           >
-                            <span className="truncate pr-2 font-medium">SSX Tracking (Padrão)</span>
-                            {manualCategory === 'API Reference' && (
+                            <span className="truncate pr-2 font-medium">{DEFAULT_API_SPACE}</span>
+                            {manualCategory === DEFAULT_API_SPACE && (
                               <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                             )}
                           </button>
@@ -366,7 +367,7 @@ export default function AuthPage() {
                 <div key={cat} className="bg-background/40 border border-green-500/20 p-4 rounded-lg flex items-center justify-between text-xs">
                   <div>
                     <span className="font-semibold text-foreground block">
-                      {cat === 'API Reference' ? 'SSX Tracking (Padrão)' : cat}
+                      {cat}
                     </span>
                     <span className="text-muted-foreground block mt-1">
                       Usuário: {authObj.username || 'Manual'}

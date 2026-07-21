@@ -1,16 +1,20 @@
 import { FileJson, Activity, Database } from 'lucide-react';
 import Link from 'next/link';
+import { LogoutButton } from '@/components/admin/LogoutButton';
 
 export default function AdminDashboard() {
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Painel Administrativo
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Gerencie os endpoints da documentação, acompanhe os logs de uso do Playground e adicione novas categorias. O sistema está integrado ao Supabase.
-        </p>
+      <div className="mb-10 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Painel Administrativo
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Gerencie os endpoints da documentação, acompanhe os logs de uso do Playground e adicione novas categorias. O sistema está integrado ao Postgres.
+          </p>
+        </div>
+        <LogoutButton />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

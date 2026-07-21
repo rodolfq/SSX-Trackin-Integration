@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useEndpointStore, EndpointDef, EndpointField, EndpointPreset } from '@/store/endpointStore';
+import { DEFAULT_API_SPACE } from '@/lib/constants';
 import { Plus, Edit, Trash2, ArrowLeft, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import { AppScrollbar } from '@/components/AppScrollbar';
@@ -25,7 +26,7 @@ export default function AdminEndpoints() {
   const handleAddNew = () => {
     const newEp: EndpointDef = {
       id: `new-${Date.now()}`,
-      category: 'API Reference',
+      category: DEFAULT_API_SPACE,
       group: 'Nova Categoria',
       name: 'Novo Endpoint',
       method: 'POST',
@@ -332,17 +333,7 @@ export default function AdminEndpoints() {
           </div>
           {!editingId && (
             <div className="flex gap-2">
-              <button 
-                onClick={() => {
-                  if (confirm('Isto irá restaurar todos os endpoints originais. Continuar?')) {
-                    useEndpointStore.getState().resetEndpoints();
-                  }
-                }}
-                className="bg-secondary text-foreground hover:bg-secondary/80 px-4 py-2 rounded-md flex items-center justify-center gap-2 font-medium"
-              >
-                Restaurar Padrões
-              </button>
-              <button 
+              <button
                 onClick={handleAddNew}
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-md flex items-center justify-center gap-2 font-medium"
               >

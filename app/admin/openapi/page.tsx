@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useEndpointStore, EndpointDef } from '@/store/endpointStore';
+import { useEndpointStore } from '@/store/endpointStore';
+import { parseOpenApiToEndpoints } from '@/lib/openapiParser';
 import { ArrowLeft, Upload, CheckCircle, AlertTriangle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,89 +23,6 @@ export default function ImportOpenAPI() {
     }
   };
 
-  // Helper to recursively extract schema fields and generate dummy mock payload values from OpenAPI schemas
-  const resolveSchema = (schemaObj: any, rootData: any, prefix = ''): { fields: any[], dummyValue: any } => {
-    let fields: any[] = [];
-    let dummyValue: any = null;
-
-    if (!schemaObj) return { fields, dummyValue };
-
-    let currentSchema = schemaObj;
-    if (schemaObj.$ref) {
-      const refName = schemaObj.$ref.split('/').pop();
-      currentSchema = rootData?.components?.schemas?.[refName] || rootData?.definitions?.[refName] || null;
-      if (!currentSchema) return { fields, dummyValue: {} };
-    }
-
-    const type = currentSchema.type || 'object';
-
-    if (type === 'array') {
-      const itemsSchema = currentSchema.items;
-      const { fields: subFields, dummyValue: subDummy } = resolveSchema(itemsSchema, rootData, prefix);
-      fields = subFields;
-      dummyValue = Array.isArray(subDummy) ? subDummy : [subDummy];
-    } else if (type === 'object' || currentSchema.properties) {
-      const properties = currentSchema.properties || {};
-      const requiredList = currentSchema.required || [];
-      const obj: any = {};
-
-      for (const [key, propVal] of Object.entries(properties) as any) {
-        const fieldName = prefix ? `${prefix}.${key}` : key;
-        
-        let propSchema = propVal;
-        if (propVal.$ref) {
-          const refName = propVal.$ref.split('/').pop();
-          propSchema = rootData?.components?.schemas?.[refName] || rootData?.definitions?.[refName] || propVal;
-        }
-
-        const propType = propSchema.type || 'string';
-
-        if (propType === 'object' || propSchema.properties) {
-          const { fields: subFields, dummyValue: subDummy } = resolveSchema(propSchema, rootData, fieldName);
-          fields.push({
-            name: fieldName,
-            type: 'object',
-            description: propVal.description || '',
-            required: requiredList.includes(key)
-          });
-          fields.push(...subFields);
-          obj[key] = subDummy;
-        } else if (propType === 'array') {
-          const itemsSchema = propSchema.items;
-          const { fields: subFields, dummyValue: subDummy } = resolveSchema(itemsSchema, rootData, `${fieldName}[]`);
-          fields.push({
-            name: fieldName,
-            type: 'array',
-            description: propVal.description || '',
-            required: requiredList.includes(key)
-          });
-          fields.push(...subFields);
-          obj[key] = Array.isArray(subDummy) ? subDummy : [subDummy];
-        } else {
-          fields.push({
-            name: fieldName,
-            type: propType,
-            description: propVal.description || '',
-            required: requiredList.includes(key)
-          });
-          obj[key] = getDummyValue(propType, propVal.format);
-        }
-      }
-      dummyValue = obj;
-    } else {
-      dummyValue = getDummyValue(type, currentSchema.format);
-    }
-
-    return { fields, dummyValue };
-  };
-
-  const getDummyValue = (type: string, format?: string) => {
-    if (type === 'number' || type === 'integer' || type === 'number($double)' || type === 'integer($int64)') return 0;
-    if (type === 'boolean') return false;
-    if (format === 'date-time') return new Date().toISOString();
-    return '';
-  };
-
   const handleImport = () => {
     if (!jsonInput.trim()) {
       setStatus({ type: 'error', message: 'Por favor, insira o JSON ou faça o upload de um arquivo.' });
@@ -113,288 +31,16 @@ export default function ImportOpenAPI() {
 
     try {
       const openApiData = JSON.parse(jsonInput);
-      if (!openApiData.paths) {
-        throw new Error('Arquivo JSON inválido: não contém "paths". O formato deve ser OpenAPI/Swagger válido.');
-      }
+      const { endpoints: parsedEndpoints, count, skipped } = parseOpenApiToEndpoints(
+        openApiData,
+        categoryName,
+        endpoints
+      );
 
-      const category = categoryName.trim() || openApiData.info?.title || 'API Reference';
-      const categorySlug = category
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+      parsedEndpoints.forEach(ep => addEndpoint(ep));
 
-      let count = 0;
-      let skipped = 0;
-      let sortOrder = 0;
-
-      for (const [path, methods] of Object.entries(openApiData.paths)) {
-        for (const [method, rawDetails] of Object.entries(methods as any)) {
-          if (!['get', 'post', 'put', 'delete', 'patch'].includes(method.toLowerCase())) continue;
-          
-          const details = rawDetails as any;
-
-          // Convert to our format
-          const rawId = path.replace(/^\//, '').toLowerCase().replace(/\//g, '-');
-          const id = category === 'API Reference' ? rawId : `${categorySlug}-${rawId}`;
-          
-          if (category === 'API Reference' && 
-              (path === '/Tracking/PositionHistory/List' || 
-               path === '/Tracking/PositionHistory/ListSoap' || 
-               path === '/v2/Tracking/PositionHistory/List')) {
-              continue;
-          }
-
-          // Check if it already exists
-          if (endpoints.some(e => e.id === id && e.method.toLowerCase() === method.toLowerCase())) {
-            skipped++;
-            continue; // Skip existing endpoints
-          }
-
-          const group = details.tags ? details.tags[0] : 'Geral';
-          
-          let generatedName = path.split('/').filter(Boolean);
-          let version = '';
-          if (generatedName[0] && generatedName[0].toLowerCase().startsWith('v') && !isNaN(Number(generatedName[0][1]))) {
-              version = generatedName.shift() as string;
-          }
-          // Ignore the first segment if there are multiple segments, to avoid redundancy with the API name
-          if (generatedName.length > 1) {
-              generatedName.shift();
-          }
-          let nameStr = generatedName.join(' ');
-          nameStr = nameStr.replace(/([a-z])([A-Z])/g, '$1 $2').trim().replace(/\s+/g, ' ');
-          if (version) {
-              nameStr += ` (${version})`;
-          }
-          let name = id.endsWith('v3-tracking-positionhistory-list') ? 'Position History (v3)' : nameStr;
-          if (id.endsWith('login')) name = 'Login';
-          
-          let defaultPayload: any = {};
-          let schemaFields: any[] = [];
-          let schemaName = 'Payload';
-          
-          // Check parameters
-          if (details.parameters && details.parameters.length > 0) {
-            const queryParams = details.parameters.filter((p: any) => p.in === 'query' || p.in === 'path');
-            if (queryParams.length > 0) {
-              queryParams.forEach((p: any) => {
-                schemaFields.push({
-                  name: p.name,
-                  type: p.schema?.type || 'string',
-                  description: p.description || '',
-                  required: p.required || false
-                });
-                defaultPayload[p.name] = getDummyValue(p.schema?.type);
-              });
-            }
-          }
-
-          // Try to extract payload from requestBody
-          let reqSchema = details.requestBody?.content?.['application/json']?.schema || 
-                          details.requestBody?.content?.['application/json-patch+json']?.schema;
-          
-          if (!reqSchema && details.parameters) {
-             const bodyParam = details.parameters.find((p: any) => p.in === 'body');
-             if (bodyParam?.schema) {
-               reqSchema = bodyParam.schema;
-             }
-          }
-
-          if (reqSchema) {
-            if (reqSchema.$ref) {
-              schemaName = reqSchema.$ref.split('/').pop();
-            } else if (reqSchema.type === 'array' && reqSchema.items?.$ref) {
-              schemaName = reqSchema.items.$ref.split('/').pop() + "[]";
-            }
-
-            const { fields, dummyValue } = resolveSchema(reqSchema, openApiData);
-            schemaFields = fields;
-            defaultPayload = dummyValue || {};
-          }
-
-          let responseSchemaFields: any[] = [];
-          let responseSchemaName = 'Response';
-
-          // Try to extract response schema
-          const resSchema = details.responses?.['200']?.content?.['application/json']?.schema ||
-                            details.responses?.['200']?.content?.['text/json']?.schema;
-          if (resSchema) {
-            if (resSchema.$ref) {
-              responseSchemaName = resSchema.$ref.split('/').pop();
-            } else if (resSchema.type === 'array' && resSchema.items?.$ref) {
-              responseSchemaName = resSchema.items.$ref.split('/').pop() + "[]";
-            }
-            const { fields } = resolveSchema(resSchema, openApiData);
-            responseSchemaFields = fields;
-          } else if (details.responses?.['200']?.schema) {
-            // older swagger format
-            const { fields } = resolveSchema(details.responses['200'].schema, openApiData);
-            responseSchemaFields = fields;
-          }
-
-          let parsedResponses: any[] = [];
-          if (details.responses) {
-            for (const [code, resVal] of Object.entries(details.responses)) {
-              const resObj = resVal as any;
-              let resSchemaObj = resObj.content?.['application/json']?.schema ||
-                                 resObj.content?.['text/json']?.schema ||
-                                 resObj.schema;
-              
-              let responseFields: any[] = [];
-              let responseDummyValue: any = null;
-              let currentResponseSchemaName = `Response${code}`;
-              
-              if (resSchemaObj) {
-                if (resSchemaObj.$ref) {
-                  currentResponseSchemaName = resSchemaObj.$ref.split('/').pop();
-                } else if (resSchemaObj.type === 'array' && resSchemaObj.items?.$ref) {
-                  currentResponseSchemaName = resSchemaObj.items.$ref.split('/').pop() + "[]";
-                }
-                const { fields, dummyValue } = resolveSchema(resSchemaObj, openApiData);
-                responseFields = fields;
-                responseDummyValue = dummyValue;
-              }
-              
-              parsedResponses.push({
-                code,
-                description: resObj.description || '',
-                schema: responseFields.length > 0 ? {
-                  name: currentResponseSchemaName,
-                  fields: responseFields
-                } : undefined,
-                example: responseDummyValue
-              });
-            }
-          }
-
-          // Inject fallback response for Actuator List if 200 example is empty or it is the specific path
-          if (path === '/Tracking/Actuator/List' || path.toLowerCase() === '/tracking/actuator/list') {
-            const index200 = parsedResponses.findIndex(r => r.code === '200');
-            const fallbackExample = [
-              {
-                "IdActuator": 0,
-                "Name": "string"
-              }
-            ];
-            if (index200 !== -1) {
-              parsedResponses[index200].example = fallbackExample;
-              parsedResponses[index200].schema = {
-                name: 'ActuatorResult[]',
-                fields: [
-                  { name: 'IdActuator', type: 'integer', description: 'ID do atuador', required: true },
-                  { name: 'Name', type: 'string', description: 'Nome do atuador', required: true }
-                ]
-              };
-            } else {
-              parsedResponses.push({
-                code: '200',
-                description: 'Sucesso.',
-                schema: {
-                  name: 'ActuatorResult[]',
-                  fields: [
-                    { name: 'IdActuator', type: 'integer', description: 'ID do atuador', required: true },
-                    { name: 'Name', type: 'string', description: 'Nome do atuador', required: true }
-                  ]
-                },
-                example: fallbackExample
-              });
-            }
-          }
-
-          let presets: any[] = [];
-          if (id.endsWith('v3-tracking-positionhistory-list') || id.endsWith('tracking-positionhistory-list')) {
-             presets = [
-              {
-                name: 'Posições de hoje',
-                payload: [
-                  {
-                    "PropertyName": "EventDate",
-                    "Condition": "GreaterThan",
-                    "Value": new Date().toISOString().split('T')[0]
-                  }
-                ]
-              },
-              {
-                name: 'Posições do dia atual (String)',
-                payload: [
-                  {
-                    "PropertyName": "EventDate",
-                    "Condition": "GreaterThan",
-                    "Value": "DIA ATUAL"
-                  }
-                ]
-              },
-              {
-                name: 'Última posição',
-                payload: [
-                  {
-                    "PropertyName": "IdPosition",
-                    "Condition": "GreaterThan",
-                    "Value": "1"
-                  }
-                ]
-              },
-              {
-                name: 'A partir do último IdPosition',
-                payload: [
-                  {
-                    "PropertyName": "IdPosition",
-                    "Condition": "GreaterThan",
-                    "Value": "LastIdPosition"
-                  }
-                ]
-              }
-            ];
-            // Force default payload to match preset logic
-            defaultPayload = [
-              {
-                "PropertyName": "TrackedUnitIntegrationCode",
-                "Condition": "Equal",
-                "Value": "0001"
-              }
-            ];
-          }
-          
-          if (schemaName === 'QueryCondition[]' || schemaName === 'QueryCondition') {
-              if (!defaultPayload || (Array.isArray(defaultPayload) && defaultPayload.length === 0) || Object.keys(defaultPayload).length === 0) {
-                  defaultPayload = [
-                    {
-                      "PropertyName": "NomeDaPropriedade",
-                      "Condition": "Equal",
-                      "Value": "Valor"
-                    }
-                  ];
-              }
-          }
-
-          let desc = details.description || details.summary || '';
-          if (desc === name) desc = '';
-
-          const newEp: EndpointDef = {
-            id,
-            category,
-            group,
-            name,
-            method: method.toUpperCase() as any,
-            path,
-            description: desc,
-            defaultPayload,
-            schema: { name: schemaName, fields: schemaFields },
-            responseSchema: { name: responseSchemaName, fields: responseSchemaFields },
-            responses: parsedResponses,
-            presets,
-            sortOrder: sortOrder++
-          };
-
-          addEndpoint(newEp);
-          count++;
-        }
-      }
-
-      setStatus({ 
-        type: 'success', 
+      setStatus({
+        type: 'success',
         message: `Importação concluída: ${count} endpoints importados com sucesso. (${skipped} ignorados por já existirem)`
       });
       setJsonInput('');
@@ -403,11 +49,7 @@ export default function ImportOpenAPI() {
     }
   };
 
-  const customCategories = Array.from(new Set(
-    endpoints
-      .filter(ep => ep.category !== 'API Reference')
-      .map(ep => ep.category)
-  ));
+  const customCategories = Array.from(new Set(endpoints.map(ep => ep.category)));
 
   return (
     <div className="p-8 max-w-4xl mx-auto">

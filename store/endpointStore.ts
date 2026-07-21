@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { initialEndpoints } from './initialEndpoints';
-import { supabase } from '@/lib/supabaseClient';
 
 export interface EndpointField {
   name: string;
@@ -50,40 +48,24 @@ interface EndpointStore {
   removeEndpoint: (id: string) => Promise<void>;
   setEndpoints: (endpoints: EndpointDef[]) => void;
   deleteCategory: (category: string) => Promise<void>;
-  resetEndpoints: () => void;
-  syncInitialEndpoints: () => void;
-  fetchSupabaseEndpoints: () => Promise<void>;
+  fetchEndpoints: () => Promise<void>;
 }
 
 export const useEndpointStore = create<EndpointStore>()(
   persist(
     (set, get) => ({
-      endpoints: initialEndpoints as EndpointDef[],
+      endpoints: [],
       addEndpoint: async (endpoint) => {
         set((state) => ({ endpoints: [...state.endpoints, endpoint] }));
-        if (!supabase) return;
         try {
-          await supabase
-            .from('endpoints')
-            .upsert({
-              id: endpoint.id,
-              title: `${endpoint.group} - ${endpoint.name}`,
-              method: endpoint.method,
-              path: endpoint.path,
-              description: endpoint.description,
-              category: endpoint.category,
-              group_name: endpoint.group,
-              name: endpoint.name,
-              default_payload: endpoint.defaultPayload,
-              schema_fields: endpoint.schema,
-              response_schema_fields: endpoint.responses
-                ? { ...endpoint.responseSchema, responses: endpoint.responses }
-                : endpoint.responseSchema,
-              presets: endpoint.presets || [],
-              sort_order: endpoint.sortOrder ?? 0
-            });
+          const res = await fetch('/api/endpoints', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(endpoint),
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
         } catch (e) {
-          console.error('Failed to save endpoint to Supabase:', e);
+          console.error('Failed to save endpoint:', e);
         }
       },
       updateEndpoint: (id, updated) =>
@@ -96,14 +78,11 @@ export const useEndpointStore = create<EndpointStore>()(
         set((state) => ({
           endpoints: state.endpoints.filter((ep) => ep.id !== id),
         }));
-        if (!supabase) return;
         try {
-          await supabase
-            .from('endpoints')
-            .delete()
-            .eq('id', id);
+          const res = await fetch(`/api/endpoints/${encodeURIComponent(id)}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
         } catch (e) {
-          console.error('Failed to delete endpoint from Supabase:', e);
+          console.error('Failed to delete endpoint:', e);
         }
       },
       setEndpoints: (endpoints) => set({ endpoints }),
@@ -111,100 +90,39 @@ export const useEndpointStore = create<EndpointStore>()(
         set((state) => ({
           endpoints: state.endpoints.filter((ep) => ep.category !== category),
         }));
-        if (!supabase) return;
         try {
-          await supabase
-            .from('endpoints')
-            .delete()
-            .eq('category', category);
+          const res = await fetch(`/api/endpoints/category/${encodeURIComponent(category)}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
         } catch (e) {
-          console.error('Failed to delete category from Supabase:', e);
+          console.error('Failed to delete category:', e);
         }
       },
-      resetEndpoints: () => set({ endpoints: initialEndpoints as EndpointDef[] }),
-      syncInitialEndpoints: () => set((state) => {
-        const initialMap = new Map((initialEndpoints as EndpointDef[]).map(ep => [ep.id, ep]));
-        
-        // Only keep custom endpoints (not in API Reference) or ones that still exist in initialEndpoints
-        const filteredStateEndpoints = state.endpoints.filter(ep => 
-          ep.category !== 'API Reference' || initialMap.has(ep.id)
-        );
- 
-        const updatedEndpoints = filteredStateEndpoints.map(ep => {
-          if (initialMap.has(ep.id)) {
-            const initial = initialMap.get(ep.id)!;
-            return {
-              ...ep,
-              schema: initial.schema,
-              responseSchema: initial.responseSchema,
-              responses: initial.responses,
-              defaultPayload: initial.defaultPayload,
-              description: initial.description,
-              name: initial.name,
-              method: initial.method,
-              path: initial.path
-            };
-          }
-          return ep;
-        });
- 
-        const existingIds = new Set(filteredStateEndpoints.map(ep => ep.id));
-        const missing = (initialEndpoints as EndpointDef[]).filter(ep => !existingIds.has(ep.id));
-        
-        return { endpoints: [...updatedEndpoints, ...missing] };
-      }),
-      fetchSupabaseEndpoints: async () => {
-        if (!supabase) return;
+      fetchEndpoints: async () => {
         try {
-          const { data, error } = await supabase
-            .from('endpoints')
-            .select('*')
-            .order('sort_order', { ascending: true });
-          
-          if (error) throw error;
-          
-          if (data) {
-            const dbEndpoints: EndpointDef[] = data.map((row: any) => ({
-              id: row.id,
-              category: row.category,
-              group: row.group_name,
-              name: row.name,
-              method: row.method,
-              path: row.path,
-              description: row.description || '',
-              defaultPayload: row.default_payload || {},
-              schema: row.schema_fields || { name: 'Payload', fields: [] },
-              responseSchema: row.response_schema_fields || { name: 'Response', fields: [] },
-              responses: row.response_schema_fields?.responses || [],
-              presets: row.presets || [],
-              sortOrder: row.sort_order ?? 0
-            }));
+          const res = await fetch('/api/endpoints');
+          if (!res.ok) throw new Error(res.statusText);
+          const { endpoints: dbEndpoints } = await res.json() as { endpoints: EndpointDef[] };
 
-            set((state) => {
-              const dbIds = new Set(dbEndpoints.map(e => e.id));
-              
-              // Keep initial endpoints and any custom ones from DB, or state-only custom ones not in DB
-              const otherCustom = state.endpoints.filter(ep => 
-                ep.category !== 'API Reference' && !dbIds.has(ep.id)
-              );
+          set((state) => {
+            const dbIds = new Set(dbEndpoints.map(e => e.id));
+            // Keep any locally-added endpoints that haven't round-tripped through the DB yet
+            const notYetSynced = state.endpoints.filter(ep => !dbIds.has(ep.id));
 
-              return {
-                endpoints: [...(initialEndpoints as EndpointDef[]), ...dbEndpoints, ...otherCustom]
-              };
-            });
-          }
+            return {
+              endpoints: [...dbEndpoints, ...notYetSynced]
+            };
+          });
         } catch (e) {
-          console.error('Failed to fetch endpoints from Supabase:', e);
+          console.error('Failed to fetch endpoints from database:', e);
         }
       }
     }),
     {
-      name: 'ssx-endpoints-storage-v2',
+      name: 'ssx-endpoints-storage-v3',
       onRehydrateStorage: () => (state) => {
         if (state) {
           setTimeout(async () => {
-            state.syncInitialEndpoints();
-            await state.fetchSupabaseEndpoints();
+            await state.fetchEndpoints();
           }, 0);
         }
       }

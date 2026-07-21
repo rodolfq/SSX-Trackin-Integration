@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
 import { useEndpointStore } from '@/store/endpointStore';
+import { DEFAULT_API_SPACE } from '@/lib/constants';
 
 const staticNavigation = [
   {
@@ -48,7 +49,7 @@ export function Sidebar() {
   const { endpoints } = useEndpointStore();
   const [isOpen, setIsOpen] = useState(false);
   
-  const [activeApi, setActiveApi] = useState('API Reference');
+  const [activeApi, setActiveApi] = useState(DEFAULT_API_SPACE);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export function Sidebar() {
   }, []);
 
   const apiSpaces = useMemo(() => {
-    const spaces = new Set<string>(['API Reference']);
+    const spaces = new Set<string>([DEFAULT_API_SPACE]);
     if (endpoints && endpoints.length > 0) {
       endpoints.forEach(ep => {
         if (ep.category) {
@@ -76,10 +77,10 @@ export function Sidebar() {
   // Reset to default API if the active API category was deleted
   useEffect(() => {
     if (!isMounted) return;
-    if (activeApi !== 'API Reference' && !apiSpaces.includes(activeApi)) {
-      setActiveApi('API Reference');
+    if (activeApi !== DEFAULT_API_SPACE && !apiSpaces.includes(activeApi)) {
+      setActiveApi(DEFAULT_API_SPACE);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ssx-active-api', 'API Reference');
+        localStorage.setItem('ssx-active-api', DEFAULT_API_SPACE);
       }
       router.push('/');
     }
@@ -186,7 +187,7 @@ export function Sidebar() {
               className="w-full flex items-center justify-between text-xs bg-background border border-border text-foreground px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-medium cursor-pointer transition-all hover:bg-secondary/40 active:scale-[0.99]"
             >
               <span className="truncate">
-                {activeApi === 'API Reference' ? 'SSX Tracking (Padrão)' : activeApi}
+                {activeApi}
               </span>
               <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 ml-2", isOpen && "transform rotate-180")} />
             </button>
@@ -237,7 +238,7 @@ export function Sidebar() {
                           )}
                         >
                           <span className="truncate pr-2">
-                            {space === 'API Reference' ? 'SSX Tracking (Padrão)' : space}
+                            {space}
                           </span>
                           {isSelected && (
                             <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
@@ -260,7 +261,7 @@ export function Sidebar() {
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4 px-1 flex items-center gap-2">
                 {group.category}
               </p>
-            {group.category === 'API Reference' && favoriteItems.length > 0 && (
+            {group.category === activeApi && favoriteItems.length > 0 && (
               <div className="mb-4 space-y-2">
                 {favoriteItems.map((item: any) => (
                   <div key={`fav-${item.href}`}>

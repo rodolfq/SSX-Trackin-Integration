@@ -1,0 +1,2705 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SSX Tracking Integration App",
+    "description": "Documentação de integração SSX voltada para administração das últimas posições, histórico de posições, ativar/desativar âncora e ativar/atualizar/desativar pontos de controle. Para a utilização destes métodos é necessário que o cliente acesse o portal SSX e crie uma nova integração do tipo: SSX Tracking Integration App. *Essa Integração possui uma cobrança adicional.",
+    "version": "v1"
+  },
+  "paths": {
+    "/Login": {
+      "post": {
+        "tags": [
+          "_Login"
+        ],
+        "summary": "Método utilizado para geração do token.",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "query",
+            "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas.",
+            "required": true,
+            "schema": {
+              "maxLength": 150,
+              "minLength": 5,
+              "type": "string",
+              "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas."
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas.",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "minLength": 6,
+              "type": "string",
+              "description": "Login do usuário. O usuário deve ser criado no portal Tracking com suas devidas permissões associadas."
+            }
+          },
+          {
+            "name": "Hashcentral",
+            "in": "query",
+            "description": "Código único de identificação da Central. Esse campo deve ser preenchido caso o login não seja um email.",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação da Central. Esse campo deve ser preenchido caso o login não seja um email.",
+              "nullable": true
+            }
+          },
+          {
+            "name": "HashAuth",
+            "in": "query",
+            "description": "Código único de identificação da integração. Esse campo deverá ser preenchido nos casos abaixo: \r\n\r\n1) Utilização dos métodos: \r\n- /Tracking/PositionHistory/List\r\n- /v2/Tracking/PositionHistory/List\r\n- /Tracking/RuleViolation/List. \r\n\r\nPara estes métodos o cliente deverá ter o Produto WebService liberado, bem como a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" criada no SSX.\r\n\r\n2) Utilização dos métodos da API \"SSX Tracking Integration App\". Para a requisição dos métodos pertencentes a esta API, o cliente deverá ter a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" no SSX. (*)Essa Integração possui uma cobrança adicional.\r\n\r\nPara estes casos, o parâmetro será obrigatório para identificação das unidades rastreadas que farão parte da integração.",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação da integração. Esse campo deverá ser preenchido nos casos abaixo: \r\n\r\n1) Utilização dos métodos: \r\n- /Tracking/PositionHistory/List\r\n- /v2/Tracking/PositionHistory/List\r\n- /Tracking/RuleViolation/List. \r\n\r\nPara estes métodos o cliente deverá ter o Produto WebService liberado, bem como a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" criada no SSX.\r\n\r\n2) Utilização dos métodos da API \"SSX Tracking Integration App\". Para a requisição dos métodos pertencentes a esta API, o cliente deverá ter a integração configurada com o Integrador \"SSX WebService\" e tipo \"SSX Tracking Integration\" no SSX. (*)Essa Integração possui uma cobrança adicional.\r\n\r\nPara estes casos, o parâmetro será obrigatório para identificação das unidades rastreadas que farão parte da integração.",
+              "nullable": true
+            }
+          },
+          {
+            "name": "ClientIntegrationCodeBus",
+            "in": "query",
+            "description": "Código único de identificação do cliente do Global Bus no SSX",
+            "schema": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "Código único de identificação do cliente do Global Bus no SSX",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Usuário ou senha inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "416": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Address/GetAddressPositions": {
+      "post": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Método utilizado para listar os endereços das posições.",
+        "description": "Limite de 500 posições por consulta.\r\n\r\n<b>⚠ Este recurso está disponível apenas para centrais de rastreamento com a função habilitada. Para habilitar, entre em contato com o setor comercial. </b>",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GetAddressPositionsParameter"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetAddressPositionsResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/HistoryPosition/List": {
+      "post": {
+        "tags": [
+          "HistoryPosition"
+        ],
+        "summary": "Método utlizado para listar o histórico de posições das unidades rastreadas.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryListParameter"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryListParameter"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryListParameter"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryListParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryPositionResult"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryPositionResult"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryPositionResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Controlws/LastPosition/GetLastPositions": {
+      "post": {
+        "tags": [
+          "LastPosition"
+        ],
+        "summary": "Método utlizado para listar as últimas posições dos rastreadores.\r\nExemplo de filtro:  {\r\n                        \"ClientIntegrationCode\" : \"XPTO\",\r\n                        \"Filter\" : [{\"PropertyName\": \"Ignition\",\"Condition\": \"Equal\",\"Value\": true}]\r\n                    }",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LastPositionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LastPositionTrackerResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "O servidor processou a solicitação com sucesso, mas não retornou nenhum conteúdo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/LastPosition/GetBestWay": {
+      "post": {
+        "tags": [
+          "LastPosition"
+        ],
+        "summary": "Retorna a distância e o tempo gasto por uma unidade rastreada para chegar em um determinado endereço;\r\nÉ obrigatório que o cliente do usuário logado tenha o mapa do Google ativado;",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BestWayParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BestGatewayResult"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Possíveis erros: 1) Mapa Google não ativado; 2) Última posição não encontrada; 3) Latitude e longitude não identificados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de consulta excedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/EnableAnchor": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para ativar âncora em unidade rastreada.",
+        "requestBody": {
+          "description": "Dados da âncora para ativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEnableAnchorFunctionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/DisableAnchor": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para desativar âncora em unidade rastreada.",
+        "requestBody": {
+          "description": "Dados da âncora para desativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleDisableAnchorFunctionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/EnableCheckPoint": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para ativar pontos de controle.",
+        "requestBody": {
+          "description": "Dados do ponto de controle para ativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEnableCheckPointFunctionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/UpdateCheckPoint": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para atualizar ponto de controle.",
+        "requestBody": {
+          "description": "Dados do ponto de controle para atualização.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleUpdateCheckPointFunctionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/DisableCheckPoint": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para desativar ponto de controle.",
+        "requestBody": {
+          "description": "Dados do ponto de controle para desativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleDisableCheckPointFunctionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/EnableIgnition": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para ativar regra de ignição de unidade rastreada.",
+        "requestBody": {
+          "description": "Dados da unidade rastreada com regra de ignição para ativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEnableIgnitionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/UpdateIgnition": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para atualizar regra de ignição de unidade rastreada.",
+        "requestBody": {
+          "description": "Dados da unidade rastreada com regra de ignição para atualização.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleUpdateIgnitionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/DisableIgnition": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para desativar regra de ignição de unidade rastreada.",
+        "requestBody": {
+          "description": "Dados da unidade rastreada com regra de ignição para desativação.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleDisableIgnitionParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido."
+          },
+          "409": {
+            "description": "Conflito de informações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultErrorCode"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Parâmetros com formato incorreto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado do servidor, tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/DisableMaximumSpeed": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para desativar a regra Maximum speed",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaximumSpeedDisabledParamenters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/UpdateMaximumSpeed": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para atualizar a regra Maximum speed",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaximumSpeedParamenters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/InsertMaximumSpeed": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para ativar a regra Maximum speed",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaximumSpeedParamenters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/GetMaximumSpeed": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para retornar a regra Maximum speed atribuída a unidade rastreada",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaximumSpeedDisabledParamenters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaximumSpeedServiceResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/DisablePeriodOperationUnauthorized": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para desativar a regra período de operação não autorizada",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodOperationalUnanthorizedUpdateDisabledParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/UpdatePeriodOperationUnauthorized": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para atualizar a regra período de operação não autorizada,\r\n\"DaysOfTheWeek\": \"0,1,2,3,4,5,6\",  Domingo = 0, Segunda = 1, Terça = 2, Quarta-feira = 3, Quinta-feira = 4, Sexta-feira = 5, Sábado = 6, \r\n\"StartHour\": \"HH:MM\",\r\n\"EndHour\": \"HH:MM\".",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodOperationalUnanthorizedUpdateParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/InsertPeriodOperationUnauthorized": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para atualizar a regra período de operação não autorizada,\r\n\"DaysOfTheWeek\": \"0,1,2,3,4,5,6\",  Domingo = 0, Segunda = 1, Terça = 2, Quarta-feira = 3, Quinta-feira = 4, Sexta-feira = 5, Sábado = 6, \r\n\"StartHour\": \"HH:MM\",\r\n\"EndHour\": \"HH:MM\".",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodOperationalUnanthorizedUpdateParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "1 = Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    },
+    "/Controlws/Rule/GetPeriodOperationUnauthorized": {
+      "post": {
+        "tags": [
+          "Rule"
+        ],
+        "summary": "Método utilizado para retornar a regra período de operação não autorizada atribuída a unidade rastreada",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodOperationalUnanthorizedUpdateDisabledParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodOperationUnauthorizedServicesResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Server received the request, but there is no information to send back",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: User failed to provide a valid user name/password required for access to a file/directory."
+          },
+          "415": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BadRequest: Request had bad syntax or was impossible to fulfill."
+          },
+          "500": {
+            "description": "ServerError: Server does not support the facility required."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ResultToken": {
+        "type": "object",
+        "properties": {
+          "AccessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "ExpiresIn": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResultError": {
+        "type": "object",
+        "properties": {
+          "Message": {
+            "type": "string",
+            "description": "Mensagem do erro gerado na operação.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetAddressPositionsParameter": {
+        "required": [
+          "IdPosition",
+          "Latitude",
+          "Longitude"
+        ],
+        "type": "object",
+        "properties": {
+          "IdPosition": {
+            "type": "integer",
+            "description": "Código identificador único da posição.",
+            "format": "int64"
+          },
+          "Latitude": {
+            "type": "number",
+            "description": "Latitude da posição.",
+            "format": "double"
+          },
+          "Longitude": {
+            "type": "number",
+            "description": "Longitude da posição.",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetAddressPositionsResult": {
+        "type": "object",
+        "properties": {
+          "Address": {
+            "type": "string",
+            "nullable": true
+          },
+          "IdPosition": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoryListParameter": {
+        "required": [
+          "EndDatePosition",
+          "StartDatePosition",
+          "TrackedUnitIntegrationCode",
+          "TrackedUnitType"
+        ],
+        "type": "object",
+        "properties": {
+          "TrackedUnitType": {
+            "maximum": 2,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Código do tipo de unidade restreada (1 para veículo e 2 para pessoa).",
+            "format": "int32"
+          },
+          "TrackedUnitIntegrationCode": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da unidade rastreada"
+          },
+          "StartDatePosition": {
+            "type": "string",
+            "description": "Data de início do histórico posição.",
+            "format": "date-time"
+          },
+          "EndDatePosition": {
+            "type": "string",
+            "description": "Data final ho histórico da posição.",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrailerResult": {
+        "type": "object",
+        "properties": {
+          "IntegrationCode": {
+            "type": "string",
+            "description": "Código de identificação do reboque.",
+            "nullable": true
+          },
+          "Name": {
+            "type": "string",
+            "description": "Nome do reboque",
+            "nullable": true
+          },
+          "Identification": {
+            "type": "string",
+            "description": "Identificação do reboque",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoryPositionResult": {
+        "type": "object",
+        "properties": {
+          "IdPosition": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "IdTrackedUnitType": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "TrackedUnitIntegrationCode": {
+            "type": "string",
+            "description": "Código identificador único da unidade rastreada no sistema (Único por tipo de unidade rastreada: Veículo, pessoa, etc.).",
+            "nullable": true
+          },
+          "TrackerSlot": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "IdTrackedUnit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "TrackedUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "IdEvent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "IdMainBatteryMeasureUnit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "IdBackupBatteryMeasureUnit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Ignition": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "Available": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "ValidGPS": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "EventDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UpdateDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Driver": {
+            "type": "string",
+            "nullable": true
+          },
+          "Latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "Longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "Address": {
+            "type": "string",
+            "nullable": true
+          },
+          "DistanceFromGeographicArea": {
+            "type": "number",
+            "format": "double"
+          },
+          "ListInputSensor": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "nullable": true
+          },
+          "ListOutputActuator": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "nullable": true
+          },
+          "ListTelemetry": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "Direction": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Velocity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "NumSatellite": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "Odometer": {
+            "type": "number",
+            "format": "double"
+          },
+          "Horimeter": {
+            "type": "number",
+            "format": "double"
+          },
+          "RPM": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "LevelTank": {
+            "type": "number",
+            "format": "double"
+          },
+          "PercentageLevelTank": {
+            "type": "number",
+            "format": "double"
+          },
+          "ListTrailer": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrailerResult"
+            },
+            "nullable": true
+          },
+          "PersonIntegrationCodeCenter": {
+            "type": "string",
+            "description": "Código identificador da central de pessoa no sistema (Único por pessoa).",
+            "nullable": true
+          },
+          "PersonIntegrationCodeClient": {
+            "type": "string",
+            "description": "Código identificador do cliente de pessoa no sistema (Único por pessoa).",
+            "nullable": true
+          },
+          "MainBattery": {
+            "type": "number",
+            "format": "double"
+          },
+          "BackupBattery": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "QueryCondition": {
+        "required": [
+          "Condition",
+          "PropertyName",
+          "Value"
+        ],
+        "type": "object",
+        "properties": {
+          "PropertyName": {
+            "maxLength": 150,
+            "minLength": 1,
+            "type": "string",
+            "description": "Nome da propriedade que se deseja filtrar."
+          },
+          "Condition": {
+            "type": "string",
+            "description": "Condição utilizada no filtro: Contains, NotContains, StartsWith, EndsWith, Equal, DoesNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo"
+          },
+          "Value": {
+            "description": "Valor a ser utilizado no filtro."
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastPositionParameter": {
+        "type": "object",
+        "properties": {
+          "ClientIntegrationCode": {
+            "type": "string",
+            "description": "Código identificador do cliente. Deve ser único em ambos os sistemas integrados.\r\nUsado para filtrar as unidades rastreadas de um determinado cliente, caso não seja informado, o sistema irá buscar as unidades rastreadas associadas ao cliente do usuário logado",
+            "nullable": true
+          },
+          "Filter": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryCondition"
+            },
+            "description": "Permite filtrar a consulta pelas propriedades básicas da classe LastPositionTrackerResult.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastPositionTrackerResult": {
+        "type": "object",
+        "properties": {
+          "IdPosition": {
+            "type": "integer",
+            "description": "Código identificador único da posição recebida do rastreador.",
+            "format": "int64"
+          },
+          "TrackedUnitIntegrationCode": {
+            "type": "string",
+            "description": "Código identificador único da unidade rastreada no sistema (Único por tipo de unidade rastreada: Veículo, pessoa, etc.).",
+            "nullable": true
+          },
+          "TrackerSlot": {
+            "type": "integer",
+            "description": "Ordem de instalação do rastreador na unidade rastreada, sendo que o SSX permite a associação de vários rasreadores a uma unidade rastreada.",
+            "format": "int32"
+          },
+          "TrackedUnit": {
+            "type": "string",
+            "description": "Descrição da unidade rastreada. Este é o valor apresentado nas telas do SSX.",
+            "nullable": true
+          },
+          "IdEvent": {
+            "type": "integer",
+            "description": "Código do evento gerador da posição.",
+            "format": "int32"
+          },
+          "Ignition": {
+            "type": "boolean",
+            "description": "Status da ignição na posição.",
+            "nullable": true
+          },
+          "Available": {
+            "type": "boolean",
+            "description": "Status operaciona da unidade rastreada: NULL=Fora de operação; 0=Disponível; 1=Ocupado;",
+            "nullable": true
+          },
+          "ValidGPS": {
+            "type": "boolean",
+            "description": "Status do GPS: 0=Inválido; 1=Válido;",
+            "nullable": true
+          },
+          "EventDate": {
+            "type": "string",
+            "description": "Data da posição gerada pelo rastreador.",
+            "format": "date-time"
+          },
+          "UpdateDate": {
+            "type": "string",
+            "description": "Data do recebimento da posição pelo SSX.",
+            "format": "date-time"
+          },
+          "Driver": {
+            "type": "string",
+            "description": "Motorista do veículo.",
+            "nullable": true
+          },
+          "Latitude": {
+            "type": "number",
+            "description": "Latitude da posição.",
+            "format": "double",
+            "readOnly": true
+          },
+          "Longitude": {
+            "type": "number",
+            "description": "Longitude da posição.",
+            "format": "double",
+            "readOnly": true
+          },
+          "Address": {
+            "type": "string",
+            "description": "Endereço da posição.",
+            "nullable": true
+          },
+          "DistanceFromGeographicArea": {
+            "type": "string",
+            "description": "Distância da área geográfica.",
+            "nullable": true
+          },
+          "ListInputSensor": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "Lista dos status das entradas do rastreador (Sensores) na posição.",
+            "nullable": true
+          },
+          "ListOutputActuator": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "Lista dos status das saídas do rastreador (Atuadores) na posição.",
+            "nullable": true
+          },
+          "ListTelemetry": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "Lista dos valores das telemetrias do rastreador na posição.",
+            "nullable": true
+          },
+          "PersonIntegrationCodeCenter": {
+            "type": "string",
+            "description": "Código identificador da central de pessoa no sistema (Único por pessoa).",
+            "nullable": true
+          },
+          "PersonIntegrationCodeClient": {
+            "type": "string",
+            "description": "Código identificador do cliente de pessoa no sistema (Único por pessoa).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BestWayParameter": {
+        "type": "object",
+        "properties": {
+          "TrackedUnitIntegrationCode": {
+            "type": "string",
+            "description": "Código identificador da unidade rastreada.\r\nCaso o usuário logado seja da Central, o sistema irá usar o \"Código integração Central\" configurado na tela da unidade rastreada.\r\nCaso o usuário logado seja do cliente da Central, o sistema irá usar o \"Código integração Cliente\" configurado na tela da unidade rastreada.",
+            "nullable": true
+          },
+          "TrackerSlot": {
+            "type": "integer",
+            "description": "Número do rastreador, onde 1 é o número do rastreador principal",
+            "format": "int32",
+            "nullable": true
+          },
+          "Country": {
+            "type": "string",
+            "description": "País",
+            "nullable": true
+          },
+          "State": {
+            "type": "string",
+            "description": "Estado",
+            "nullable": true
+          },
+          "City": {
+            "type": "string",
+            "description": "Cidade",
+            "nullable": true
+          },
+          "District": {
+            "type": "string",
+            "description": "Bairro",
+            "nullable": true
+          },
+          "Address": {
+            "type": "string",
+            "description": "Logradouro do endereço",
+            "nullable": true
+          },
+          "AddressNumber": {
+            "type": "string",
+            "description": "Número do endereço",
+            "nullable": true
+          },
+          "ZipCode": {
+            "type": "string",
+            "description": "Código de endereçamento postal (CEP)",
+            "nullable": true
+          },
+          "Latitude": {
+            "type": "number",
+            "description": "Latitude do endereço. Campo opcional, caso a aplicação cliente já tenha essa informação",
+            "format": "float",
+            "nullable": true
+          },
+          "Longitude": {
+            "type": "number",
+            "description": "Longitude do endereço. Campo opcional, caso a aplicação cliente já tenha essa informação",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BestGatewayResult": {
+        "type": "object",
+        "properties": {
+          "TimeInSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "DistanceInMeters": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "AddressLatitude": {
+            "type": "number",
+            "format": "float"
+          },
+          "AddressLongitude": {
+            "type": "number",
+            "format": "float"
+          },
+          "LastPosition": {
+            "$ref": "#/components/schemas/LastPositionTrackerResult"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleEnableAnchorFunctionParameter": {
+        "required": [
+          "Tolerance",
+          "TrackerOrder",
+          "TypeUnitTracker",
+          "UnitTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnitTrackerIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da unidade rastreada"
+          },
+          "Tolerance": {
+            "type": "integer",
+            "description": "Raio de tolerância para considerar a área geográfica da âncora",
+            "format": "int32"
+          },
+          "TypeUnitTracker": {
+            "maximum": 2,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Tipo da unidade rastreada. 1: Veículo e 2: Pessoa",
+            "format": "int32"
+          },
+          "TrackerOrder": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Ordem do rastreador da unidade rastreada",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResultErrorCode": {
+        "type": "object",
+        "properties": {
+          "Code": {
+            "type": "integer",
+            "description": "Código do erro gerado na operação.",
+            "format": "int32",
+            "nullable": true
+          },
+          "Message": {
+            "type": "string",
+            "description": "Mensagem do erro gerado na operação.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleDisableAnchorFunctionParameter": {
+        "required": [
+          "TrackerOrder",
+          "TypeUnitTracker",
+          "UnitTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnitTrackerIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da unidade rastreada"
+          },
+          "TypeUnitTracker": {
+            "maximum": 2,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Tipo da unidade rastreada. 1: Veículo e 2: Pessoa",
+            "format": "int32"
+          },
+          "TrackerOrder": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Ordem do rastreador da unidade rastreada",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleEnableCheckPointFunctionParameter": {
+        "required": [
+          "CheckPointName",
+          "Description",
+          "GeographyIntegrationCode",
+          "IdColorCheckPoint",
+          "Latitude",
+          "ListPersonIntegrationCode",
+          "ListUnitTrackerIntegrationCode",
+          "Longitude",
+          "RuleIntegrationCode",
+          "Tolerance",
+          "TypeUnitTracker"
+        ],
+        "type": "object",
+        "properties": {
+          "CheckPointName": {
+            "maxLength": 150,
+            "minLength": 1,
+            "type": "string",
+            "description": "Nome do ponto de controle"
+          },
+          "ListUnitTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Lista de unidades rastreadas que estarão associadas ao ponto de controle. Ex.: 245, 456, 678, 699"
+          },
+          "TypeUnitTracker": {
+            "type": "integer",
+            "description": "Tipo de Unidade Rastreada. 1 = Veículo e 2 = Pessoa.",
+            "format": "int32"
+          },
+          "ListPersonIntegrationCode": {
+            "type": "string",
+            "description": "Lista de pessoas/contatos que estarão associadas ao ponto de controle e serão notificadas. Ex.: 147, 198, 211, 354"
+          },
+          "GeographyIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Área/Rota"
+          },
+          "RuleIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da regra"
+          },
+          "Latitude": {
+            "type": "number",
+            "description": "Latitude da área geográfica do ponto de controle",
+            "format": "double"
+          },
+          "Longitude": {
+            "type": "number",
+            "description": "Longitude da área geográfica do ponto de controle",
+            "format": "double"
+          },
+          "Tolerance": {
+            "type": "integer",
+            "description": "Raio de tolerância para considerar a área geográfica do ponto de controle",
+            "format": "int32"
+          },
+          "Description": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string",
+            "description": "Descrição/Endereço do ponto de controle"
+          },
+          "IdColorCheckPoint": {
+            "type": "integer",
+            "description": "Código de identiticação da cor do ponto de controle.\r\n1  = 988383\r\n2  = D65E5E\r\n3  = D97B4C\r\n4  = D66B98\r\n5  = 936BD6\r\n6  = 608CE0\r\n7  = 65D6B7\r\n8  = 9FD96D\r\n9  = F0B132\r\n10 = 949191\r\n11 = C2C0C0\r\n12 = 555555\r\n13 = F6F6F6",
+            "format": "int32"
+          },
+          "ToNotify": {
+            "type": "boolean",
+            "description": "Informar se não estiver no ponto de controle no horário. 1 (true) para Sim e 0 (false) para Não."
+          },
+          "ListDaysOfWeek": {
+            "type": "string",
+            "description": "Informar a lista dos dias da semana do ponto de controle separados por vírgula. Ex.: 0, 1, 2, 3\r\n0 = Domingo\r\n1 = Segunda\r\n2 = Terça\r\n3 = Quarta\r\n4 = Quinta\r\n5 = Sexta\r\n6 = Sábado.",
+            "nullable": true
+          },
+          "StartHour": {
+            "type": "string",
+            "description": "Informar horário de ínicio do ponto de controle. Ex.: 07:00",
+            "format": "date-span"
+          },
+          "EndHour": {
+            "type": "string",
+            "description": "Informar horário do fim do ponto de controle. Ex.: 16:00",
+            "format": "date-span"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleUpdateCheckPointFunctionParameter": {
+        "required": [
+          "CheckPointName",
+          "Description",
+          "GeographyIntegrationCode",
+          "IdColorCheckPoint",
+          "Latitude",
+          "ListPersonIntegrationCode",
+          "ListUnitTrackerIntegrationCode",
+          "Longitude",
+          "RuleIntegrationCode",
+          "Tolerance",
+          "TypeUnitTracker"
+        ],
+        "type": "object",
+        "properties": {
+          "CheckPointName": {
+            "maxLength": 150,
+            "minLength": 1,
+            "type": "string",
+            "description": "Nome do ponto de controle"
+          },
+          "ListUnitTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Lista de unidades rastreadas que estarão associadas ao ponto de controle. Ex.: 245, 456, 678, 699"
+          },
+          "TypeUnitTracker": {
+            "type": "integer",
+            "description": "Tipo de Unidade Rastreada. 1 = Veículo e 2 = Pessoa.",
+            "format": "int32"
+          },
+          "ListPersonIntegrationCode": {
+            "type": "string",
+            "description": "Lista de pessoas/contatos que estarão associadas ao ponto de controle e serão notificadas. Ex.: 147, 198, 211, 354"
+          },
+          "GeographyIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Área/Rota"
+          },
+          "RuleIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da regra"
+          },
+          "Latitude": {
+            "type": "number",
+            "description": "Latitude da área geográfica do ponto de controle",
+            "format": "double"
+          },
+          "Longitude": {
+            "type": "number",
+            "description": "Longitude da área geográfica do ponto de controle",
+            "format": "double"
+          },
+          "Tolerance": {
+            "type": "integer",
+            "description": "Raio de tolerância para considerar a área geográfica do ponto de controle",
+            "format": "int32"
+          },
+          "Description": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string",
+            "description": "Descrição/Endereço do ponto de controle"
+          },
+          "IdColorCheckPoint": {
+            "type": "integer",
+            "description": "Código de identiticação da cor do ponto de controle.\r\n1  = 988383\r\n2  = D65E5E\r\n3  = D97B4C\r\n4  = D66B98\r\n5  = 936BD6\r\n6  = 608CE0\r\n7  = 65D6B7\r\n8  = 9FD96D\r\n9  = F0B132\r\n10 = 949191\r\n11 = C2C0C0",
+            "format": "int32"
+          },
+          "ToNotify": {
+            "type": "boolean",
+            "description": "Informar se não estiver no ponto de controle no horário. 1 (true) para Sim e 0 (false) para Não."
+          },
+          "ListDaysOfWeek": {
+            "type": "string",
+            "description": "Informar a lista dos dias da semana do ponto de controle separados por vírgula. Ex.: 0, 1, 2, 3\r\n0 = Domingo\r\n1 = Segunda\r\n2 = Terça\r\n3 = Quarta\r\n4 = Quinta\r\n5 = Sexta\r\n6 = Sábado.",
+            "nullable": true
+          },
+          "StartHour": {
+            "type": "string",
+            "description": "Informar horário de ínicio do ponto de controle. Ex.: 07:00",
+            "format": "date-span"
+          },
+          "EndHour": {
+            "type": "string",
+            "description": "Informar horário do fim do ponto de controle. Ex.: 16:00",
+            "format": "date-span"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleDisableCheckPointFunctionParameter": {
+        "required": [
+          "GeographyIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "GeographyIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Área/Rota"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleListPersonNotificationParameter": {
+        "required": [
+          "IsEmail",
+          "IsPush",
+          "IsSms",
+          "PersonIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "PersonIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da pessoa/contato."
+          },
+          "IsEmail": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Notificação por e-mail? 1: sim, 0: não."
+          },
+          "IsSms": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Notificação por SMS? 1: sim, 0: não."
+          },
+          "IsPush": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Notificação por Push? 1: sim, 0: não."
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleEnableIgnitionParameter": {
+        "required": [
+          "IsNotifyBegin",
+          "IsNotifyEnd",
+          "IsShowDataDriver",
+          "IsShowPositionMap",
+          "IsShowUnityTrackerData",
+          "LstPersonToNotify",
+          "TrackerOrder",
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Unidade Rastreada"
+          },
+          "TrackerOrder": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Ordem do rastreador da unidade rastreada",
+            "format": "int32"
+          },
+          "LstPersonToNotify": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleListPersonNotificationParameter"
+            },
+            "description": "Código de integração dos contatos a serem notificados"
+          },
+          "IsNotifyBegin": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Enviar notificação no início da violação da regra. 1 para Sim e 0 para Não."
+          },
+          "IsNotifyEnd": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Enviar notificação no fim da violação da regra. 1 para Sim e 0 para Não."
+          },
+          "TextEmailNotification": {
+            "type": "string",
+            "description": "Texto do e-mail de notificação.",
+            "nullable": true
+          },
+          "IsShowUnityTrackerData": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir dados da unidade rastreada. 1: Para sim e 0 para não."
+          },
+          "IsShowDataDriver": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir dados do motorista. 1: para sim e 0 para não"
+          },
+          "IsShowPositionMap": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir mapa da posição. 1: para sim e 0 para não"
+          },
+          "TimeZone": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Fuso horário do usuário.\r\nBrasil(-3) = 31; Brasil(-4) = 28;\r\nCaso seja necessário outros códigos solicite a lista ao suporte.",
+            "format": "int32"
+          },
+          "Country": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Código do páis do usuário. Brasil = 29.\r\nCaso seja necessário outros paises solicite a lista ao suporte.",
+            "format": "int32"
+          },
+          "DaylightSaving": {
+            "type": "boolean",
+            "description": "Informa se o usuário participa do horário de verão. 1 para Sim e 0 para Não."
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleUpdateIgnitionParameter": {
+        "required": [
+          "IsNotifyBegin",
+          "IsNotifyEnd",
+          "IsShowDataDriver",
+          "IsShowPositionMap",
+          "IsShowUnityTrackerData",
+          "LstPersonToNotify",
+          "TrackerOrder",
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Unidade Rastreada"
+          },
+          "TrackerOrder": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Ordem do rastreador da unidade rastreada",
+            "format": "int32"
+          },
+          "LstPersonToNotify": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleListPersonNotificationParameter"
+            },
+            "description": "Código de integração dos contatos a serem notificados"
+          },
+          "IsNotifyBegin": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Enviar notificação no início da violação da regra. 1 para Sim e 0 para Não."
+          },
+          "IsNotifyEnd": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Enviar notificação no fim da violação da regra. 1 para Sim e 0 para Não."
+          },
+          "TextEmailNotification": {
+            "type": "string",
+            "description": "Texto do e-mail de notificação.",
+            "nullable": true
+          },
+          "IsShowUnityTrackerData": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir dados da unidade rastreada. 1: Para sim e 0 para não."
+          },
+          "IsShowDataDriver": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir dados do motorista. 1: para sim e 0 para não"
+          },
+          "IsShowPositionMap": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "boolean",
+            "description": "Informações adicionais: exibir mapa da posição. 1: para sim e 0 para não"
+          },
+          "TimeZone": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Fuso horário do usuário.\r\nBrasil(-3) = 31; Brasil(-4) = 28;\r\nCaso seja necessário outros códigos solicite a lista ao suporte.",
+            "format": "int32"
+          },
+          "Country": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Código do páis do usuário. Brasil = 29.\r\nCaso seja necessário outros paises solicite a lista ao suporte.",
+            "format": "int32"
+          },
+          "DaylightSaving": {
+            "type": "boolean",
+            "description": "Informa se o usuário participa do horário de verão. 1 para Sim e 0 para Não."
+          }
+        },
+        "additionalProperties": false
+      },
+      "RuleDisableIgnitionParameter": {
+        "required": [
+          "TrackerOrder",
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string",
+            "description": "Código de integração da Unidade Rastreada"
+          },
+          "TrackerOrder": {
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Ordem do rastreador da unidade rastreada",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MaximumSpeedDisabledParamenters": {
+        "required": [
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Codigo de integração da Unidade Rastreada"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MaximumSpeedParamenters": {
+        "required": [
+          "LstPersonReceiveNotification",
+          "UnityTrackerIntegrationCode",
+          "Velocity"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Codigo de integração da Unidade Rastreada"
+          },
+          "Velocity": {
+            "type": "integer",
+            "description": "Velocidade máxima permitida",
+            "format": "int32"
+          },
+          "LstPersonReceiveNotification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de pessoas que receberão notificação (Código de integração)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MaximumSpeedServiceResult": {
+        "type": "object",
+        "properties": {
+          "Velocity": {
+            "type": "integer",
+            "description": "Velocidade máxima permitida",
+            "format": "int32"
+          },
+          "LstPersonReceiveNotification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Person list to receive notification",
+            "nullable": true
+          },
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Unidade rastreada",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PeriodOperationalUnanthorizedUpdateDisabledParameter": {
+        "required": [
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Codigo de integração da Unidade Rastreada"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PeriodOperationalUnanthorizedUpdateParameter": {
+        "required": [
+          "DaysOfTheWeek",
+          "EndHour",
+          "LstPersonReceiveNotification",
+          "StartHour",
+          "UnityTrackerIntegrationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Codigo de integração da Unidade Rastreada"
+          },
+          "DaysOfTheWeek": {
+            "type": "string",
+            "description": "Informar a lista dos dias da semana que não poderá operar, separados por vírgula. Ex.: 0, 1, 2, 3\r\n0 = Domingo\r\n1 = Segunda\r\n2 = Terça\r\n3 = Quarta\r\n4 = Quinta\r\n5 = Sexta\r\n6 = Sábado."
+          },
+          "StartHour": {
+            "type": "string",
+            "description": "Hora inicial, por exemplo: 00:00"
+          },
+          "EndHour": {
+            "type": "string",
+            "description": "Hora final, por exemplo: 06:00"
+          },
+          "LstPersonReceiveNotification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de pessoas que receberão notificação (Código de integração)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PeriodOperationUnauthorizedServicesResult": {
+        "type": "object",
+        "properties": {
+          "ListDaysByWeek": {
+            "type": "string",
+            "description": "Informa a lista dos dias da semana separados por vírgula. Ex.: 0, 1, 2, 3, 4, 5 e 6\r\n0 = Domingo\r\n1 = Segunda\r\n2 = Terça\r\n3 = Quarta\r\n4 = Quinta\r\n5 = Sexta\r\n6 = Sábado.",
+            "nullable": true
+          },
+          "LstPersonReceiveNotification": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de pessoas que irão receber a notificação",
+            "nullable": true
+          },
+          "StartHour": {
+            "type": "string",
+            "description": "Horário de ínicio do período. Ex.: 07:00",
+            "nullable": true
+          },
+          "EndHour": {
+            "type": "string",
+            "description": "Horário do fim do ponto de controle. Ex.: 16:00",
+            "nullable": true
+          },
+          "UnityTrackerIntegrationCode": {
+            "type": "string",
+            "description": "Unidade rastreada",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

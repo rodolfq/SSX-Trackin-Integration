@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { ResponseDef } from '@/store/endpointStore';
+import { DEFAULT_API_SPACE } from '@/lib/constants';
 import { Editor } from '@monaco-editor/react';
 import { Play, Loader2, Lock, Unlock, Clock, AlertCircle, Maximize2, Minimize2, Download } from 'lucide-react';
 import { AppScrollbar } from '@/components/AppScrollbar';
@@ -55,10 +56,10 @@ export function EndpointView({
   responses = []
 }: EndpointViewProps) {
   const { tokens, token: defaultToken, username: defaultUsername, setAuth } = useAuthStore();
-  const apiCategory = category || 'API Reference';
+  const apiCategory = category || DEFAULT_API_SPACE;
   const currentAuth = tokens?.[apiCategory];
   const token = currentAuth?.token ?? defaultToken;
-  const username = currentAuth?.username ?? (apiCategory === 'API Reference' ? defaultUsername : '');
+  const username = currentAuth?.username ?? (apiCategory === DEFAULT_API_SPACE ? defaultUsername : '');
   const { resolvedTheme } = useTheme();
   const [isEditingToken, setIsEditingToken] = useState(false);
   const [manualToken, setManualToken] = useState('');
